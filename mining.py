@@ -102,6 +102,13 @@ def convert_to_list(a):
         return [list(r) for r in a]
 
 
+def my_team():
+
+    """    Return the list of the team members of this assignment submission
+    as a list    of triplet of the form (student_number, first_name, last_name)        """
+    return [(9193243, 'Brodie', 'Smith'), (10250191, 'Keith', 'Hall'), (10273913, 'Sy', 'Ha')]
+
+
 class Mine(search.Problem):
     """
 
@@ -355,23 +362,23 @@ def search_bb_dig_plan(mine):
 
 
 def find_action_sequence(s0, s1):
-    '''
+    """
     Compute a sequence of actions to go from state s0 to state s1.
     There may be several possible sequences.
-    
-    Preconditions: 
-        s0 and s1 are legal states, s0<=s1 and 
-    
+
+    Preconditions:
+        s0 and s1 are legal states, s0<=s1 and
+
     Parameters
     ----------
     s0 : tuple based mine state
-    s1 : tuple based mine state 
+    s1 : tuple based mine state
 
     Returns
     -------
     A sequence of actions to go from state s0 to state s1
 
-    '''
+    """
     # approach: among all columns for which s0 < s1, pick the column loc
     # with the smallest s0[loc]
     raise NotImplementedError
