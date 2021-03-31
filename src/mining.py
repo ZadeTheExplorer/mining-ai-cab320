@@ -5,10 +5,9 @@ Created on Wed Feb  3 17:56:47 2021
 
 @author: frederic
 
-    
-class problem with     
+class problem with
 
-An open-pit mine is a grid represented with a 2D or 3D numpy array. 
+An open-pit mine is a grid represented with a 2D or 3D numpy array.
 
 The first coordinates are surface locations.
 
@@ -16,8 +15,7 @@ In the 2D case, the coordinates are (x,z).
 In the 3D case, the coordinates are (x,y,z).
 The last coordinate 'z' points down.
 
-    
-A state indicates for each surface location  how many cells 
+A state indicates for each surface location  how many cells
 have been dug in this pit column.
 
 For a 3D mine, a surface location is represented with a tuple (x,y).
@@ -103,10 +101,13 @@ def convert_to_list(a):
 
 
 def my_team():
+    """ Return the list of the team members of this assignment submission
+        as a list    of triplet of the form
+        (student_number, first_name, last_name)"""
 
-    """    Return the list of the team members of this assignment submission
-    as a list    of triplet of the form (student_number, first_name, last_name)        """
-    return [(9193243, 'Brodie', 'Smith'), (10250191, 'Keith', 'Hall'), (10273913, 'Sy', 'Ha')]
+    return [(9193243, 'Brodie', 'Smith'),
+            (10250191, 'Keith', 'Hall'),
+            (10273913, 'Sy', 'Ha')]
 
 
 class Mine(search.Problem):
@@ -145,11 +146,11 @@ class Mine(search.Problem):
     def __init__(self, underground, dig_tolerance=1):
         '''
         Constructor
-        
+
         Initialize the attributes
-        self.underground, self.dig_tolerance, self.len_x, self.len_y, self.len_z,
-        self.cumsum_mine, and self.initial
-        
+        self.underground, self.dig_tolerance, self.len_x, self.len_y,
+        self.len_z, self.cumsum_mine, and self.initial
+
         The state self.initial is a filled with zeros.
 
         Parameters
@@ -201,7 +202,8 @@ class Mine(search.Problem):
             for dx, dy in ((-1, -1), (-1, 0), (-1, +1),
                            (0, -1), (0, +1),
                            (+1, -1), (+1, 0), (+1, +1)):
-                if (0 <= loc[0] + dx < self.len_x) and (0 <= loc[1] + dy < self.len_y):
+                if ((0 <= loc[0] + dx < self.len_x) and
+                   (0 <= loc[1] + dy < self.len_y)):
                     L.append((loc[0] + dx, loc[1] + dy))
         return L
 
@@ -300,7 +302,7 @@ class Mine(search.Problem):
         '''
         Compute and return the payoff for the given state.
         That is, the sum of the values of all the digged cells.
-        
+
         No loops needed in the implementation!
         '''
         # convert to np.array in order to use tuple addressing
@@ -310,7 +312,7 @@ class Mine(search.Problem):
     def is_dangerous(self, state):
         '''
         Return True iff the given state breaches the dig_tolerance constraints.
-        
+
         No loops needed in the implementation!
         '''
         # convert to np.array in order to use numpy operators
@@ -325,9 +327,9 @@ def search_dp_dig_plan(mine):
     '''
     Search using Dynamic Programming the most profitable sequence of 
     digging actions from the initial state of the mine.
-    
+
     Return the sequence of actions, the final state and the payoff
-    
+
 
     Parameters
     ----------
@@ -345,7 +347,7 @@ def search_bb_dig_plan(mine):
     '''
     Compute, using Branch and Bound, the most profitable sequence of 
     digging actions from the initial state of the mine.
-        
+
 
     Parameters
     ----------
