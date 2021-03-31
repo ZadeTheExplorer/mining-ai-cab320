@@ -165,14 +165,23 @@ class Mine(search.Problem):
         None.
 
         '''
-        # super().__init__() # call to parent class constructor not needed
-
-        self.underground = underground
-        # self.underground  should be considered as a 'read-only' variable!
-        self.dig_tolerance = dig_tolerance
         assert underground.ndim in (2, 3)
 
-        raise NotImplementedError
+        # self.underground  should be considered as a 'read-only' variable!
+        self.underground = underground
+
+        self.dig_tolerance = dig_tolerance
+
+        self.len_x = underground.shape[0]
+        self.len_z = (underground.shape[1] if underground.ndim == 2
+                      else underground.shape[2])
+        self.len_y = underground.shape[1] if underground.ndim == 3 else None
+
+        self.cumsum_mine = np.sum(underground,
+                                  axis=1 if underground.ndim == 2 else 2)
+
+        self.initial = None  # need to finish
+
 
     def surface_neighbours(self, loc):
         '''
