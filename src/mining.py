@@ -156,7 +156,7 @@ class Mine(search.Problem):
         Parameters
         ----------
         underground : np.array
-            2D or 3D. Each element of the array contains 
+            2D or 3D. Each element of the array contains
             the profit value of the corresponding cell.
         dig_tolerance : int
              Mine attribute (see class header comment)
@@ -215,7 +215,7 @@ class Mine(search.Problem):
 
         Parameters
         ----------
-        state : 
+        state :
             represented with nested lists, tuples or a ndarray
             state of the partially dug mine
 
@@ -325,7 +325,7 @@ class Mine(search.Problem):
 
 def search_dp_dig_plan(mine):
     '''
-    Search using Dynamic Programming the most profitable sequence of 
+    Search using Dynamic Programming the most profitable sequence of
     digging actions from the initial state of the mine.
 
     Return the sequence of actions, the final state and the payoff
@@ -345,7 +345,7 @@ def search_dp_dig_plan(mine):
 
 def search_bb_dig_plan(mine):
     '''
-    Compute, using Branch and Bound, the most profitable sequence of 
+    Compute, using Branch and Bound, the most profitable sequence of
     digging actions from the initial state of the mine.
 
 
