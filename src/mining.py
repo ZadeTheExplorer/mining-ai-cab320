@@ -101,10 +101,10 @@ def convert_to_list(a):
 
 
 def my_team():
-    """ Return the list of the team members of this assignment submission
-        as a list    of triplet of the form
-        (student_number, first_name, last_name)"""
-
+    """
+    Return the list of the team members of this assignment submission
+    as a list of triplet of the form (student_number, first_name, last_name)
+    """
     return [(9193243, 'Brodie', 'Smith'),
             (10250191, 'Keith', 'Hall'),
             (10273913, 'Sy', 'Ha')]
@@ -180,8 +180,7 @@ class Mine(search.Problem):
         self.cumsum_mine = np.sum(underground,
                                   axis=1 if underground.ndim == 2 else 2)
 
-        self.initial = None  # need to finish
-
+        self.initial = np.zeros(underground.shape, dtype=int)
 
     def surface_neighbours(self, loc):
         '''
