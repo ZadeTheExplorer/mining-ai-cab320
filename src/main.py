@@ -6,6 +6,7 @@ This is the file which will run the mining solutions
 
 from mining import my_team, Mine, search_dp_dig_plan
 from mining import search_bb_dig_plan, find_action_sequence
+from test_case import MINE_1
 
 import numpy as np
 
@@ -59,6 +60,10 @@ def random_shape(third):
 
 
 if __name__ == "__main__":
-    underground = return_mine(style="v")
-    Quarry = Mine(underground)
+    # underground = return_mine(style="v")
+    Quarry = Mine(MINE_1)
     Quarry.console_display()
+    print(Quarry.initial)
+    print(Quarry.surface_neighbours((4,)))
+    print(Quarry.is_dangerous((0, 0, 0, 0, 1, 0, 0, 0)))
+    print(Quarry.is_dangerous((0, 0, 0, 0, 5, 0, 0, 0)))

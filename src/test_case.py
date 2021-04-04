@@ -20,6 +20,9 @@ MINE_1 = np.array([[0, 0, 0, 0, 0, 0, 0, 0],
 
 MINE_1_CUMSUM = np.array([0, 8, 16, 24, 32, 24, 16, 8, 0])
 
+STATE_FAIL = (0, 0, 0, 0, 3, 0, 0, 0, 0)
+STATE_PASS = (0, 0, 0, 0, 1, 2, 1, 0, 0)
+
 TEAM = [(9193243, 'Brodie', 'Smith'),
         (10250191, 'Keith', 'hall'),
         (10273913, 'Sy', 'Ha')]
@@ -47,4 +50,10 @@ class TestCase:
 
     def test_initial(self):
         quarry = Mine(MINE_1)
-        assert quarry.initial.shape == MINE_1.shape
+        assert len(quarry.initial.shape) == (len(MINE_1.shape) - 1)
+        assert quarry.initial.shape[0] == MINE_1.shape[0]
+
+    def test_dangerous(self):
+        quarry = Mine(MINE_1)
+        assert quarry.is_dangerous(STATE_FAIL) is True
+        assert quarry.is_dangerous(STATE_PASS) is False

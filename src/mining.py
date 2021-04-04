@@ -180,7 +180,9 @@ class Mine(search.Problem):
         self.cumsum_mine = np.sum(underground,
                                   axis=1 if underground.ndim == 2 else 2)
 
-        self.initial = np.zeros_like(underground, dtype=int)
+        self.initial = np.zeros((self.len_x if self.len_y is
+                                 None else (self.len_x, self.len_y)),
+                                dtype=int)
 
     def surface_neighbours(self, loc):
         '''
@@ -201,12 +203,16 @@ class Mine(search.Problem):
         L = []
         assert len(loc) in (1, 2)
         if len(loc) == 1:
+            # Ensure we have a loc within the state array.
+            assert loc[0] < self.len_x
             if loc[0] - 1 >= 0:
                 L.append((loc[0] - 1,))
             if loc[0] + 1 < self.len_x:
                 L.append((loc[0] + 1,))
         else:
             # len(loc) == 2
+            assert loc[0] < self.len_x
+            assert loc[1] < self.len_y
             for dx, dy in ((-1, -1), (-1, 0), (-1, +1),
                            (0, -1), (0, +1),
                            (+1, -1), (+1, 0), (+1, +1)):
@@ -321,14 +327,16 @@ class Mine(search.Problem):
 
     def is_dangerous(self, state):
         '''
-        Return True iff the given state breaches the dig_tolerance constraints.
+        Return True if the given state breaches the dig_tolerance constraints.
 
         No loops needed in the implementation!
         '''
         # convert to np.array in order to use numpy operators
         state = np.array(state)
 
-        raise NotImplementedError
+        if any(np.greater(np.diff(state), self.dig_tolerance)):
+            return True
+        return False
 
     # ========================  Class Mine  ==================================
 
