@@ -67,3 +67,4 @@ if __name__ == "__main__":
     print(Quarry.surface_neighbours((4,)))
     print(Quarry.is_dangerous((0, 0, 0, 0, 1, 0, 0, 0)))
     print(Quarry.is_dangerous((0, 0, 0, 0, 5, 0, 0, 0)))
+    print(Quarry.plot_state((0, 0, 0, 0, 1, 0, 0, 0)))

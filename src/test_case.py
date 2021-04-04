@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-
+This is used to conduct a unit test on Mine
 """
 
 from mining import my_team, Mine, search_dp_dig_plan
