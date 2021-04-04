@@ -180,7 +180,7 @@ class Mine(search.Problem):
         self.cumsum_mine = np.sum(underground,
                                   axis=1 if underground.ndim == 2 else 2)
 
-        self.initial = np.zeros(underground.shape, dtype=int)
+        self.initial = np.zeros_like(underground, dtype=int)
 
     def surface_neighbours(self, loc):
         '''
@@ -315,6 +315,8 @@ class Mine(search.Problem):
         '''
         # convert to np.array in order to use tuple addressing
         # state[loc]   where loc is a tuple
+        state = np.array(state)
+
         raise NotImplementedError
 
     def is_dangerous(self, state):
