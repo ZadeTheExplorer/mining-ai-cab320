@@ -21,7 +21,11 @@ MINE_1 = np.array([[0, 0, 0, 0, 0, 0, 0, 0],
 MINE_1_CUMSUM = np.array([0, 8, 16, 24, 32, 24, 16, 8, 0])
 
 STATE_FAIL = (0, 0, 0, 0, 3, 0, 0, 0, 0)
+# This should be an impossible edge case
+STATE_FAIL2 = (5, 3, 2, 1, 0, 0, 0, 0, 0)
 STATE_PASS = (0, 0, 0, 0, 1, 2, 1, 0, 0)
+STATE_PASS2 = (0, 1, 2, 3, 4, 3, 2, 1, 0)
+STATE_PASS3 = (4, 3, 2, 1, 0, 0, 0, 0, 0)
 
 TEAM = [(9193243, 'Brodie', 'Smith'),
         (10250191, 'Keith', 'hall'),
@@ -56,4 +60,7 @@ class TestCase:
     def test_dangerous(self):
         quarry = Mine(MINE_1)
         assert quarry.is_dangerous(STATE_FAIL) is True
+        assert quarry.is_dangerous(STATE_FAIL2) is True
         assert quarry.is_dangerous(STATE_PASS) is False
+        assert quarry.is_dangerous(STATE_PASS2) is False
+        assert quarry.is_dangerous(STATE_PASS3) is False

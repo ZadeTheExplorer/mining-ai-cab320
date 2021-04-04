@@ -328,8 +328,8 @@ class Mine(search.Problem):
         '''
         # convert to np.array in order to use numpy operators
         state = np.array(state)
-
-        if any(np.greater(np.diff(state), self.dig_tolerance)):
+        if any(np.greater(np.abs(np.diff(state)),
+                          self.dig_tolerance)):
             return True
         return False
 
