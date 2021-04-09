@@ -6,7 +6,7 @@ This is the file which will run the mining solutions
 
 from mining import my_team, Mine, search_dp_dig_plan
 from mining import search_bb_dig_plan, find_action_sequence
-from test_case import MINE_1
+from prac_mines import MINE_1
 
 import numpy as np
 
@@ -69,3 +69,4 @@ if __name__ == "__main__":
     print(Quarry.is_dangerous((0, 0, 0, 0, 5, 0, 0, 0)))
     print(Quarry.is_dangerous((5, 3, 2, 1, 0, 0, 0, 0, 0)))
     print(Quarry.plot_state(np.array((1, 2, 3, 2, 1, 0, 0, 0))))
+    Quarry.payoff(np.array((1, 2, 3, 2, 1, 0, 0, 0)))

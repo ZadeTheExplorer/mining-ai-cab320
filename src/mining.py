@@ -271,7 +271,8 @@ class Mine(search.Problem):
             # 3D mine
             # level by level representation
             return '\n'.join('level {}\n'.format(z)
-                             + str(self.underground[..., z]) for z in range(self.len_z))
+                             + str(self.underground[..., z]) for z in
+                             range(self.len_z))
 
             return self.underground[loc[0], loc[1], :]
 
@@ -315,8 +316,11 @@ class Mine(search.Problem):
         # convert to np.array in order to use tuple addressing
         # state[loc]   where loc is a tuple
         state = np.array(state)
-
+        print(state)
         # 0 is undug not first index
+        # append row of 0 to represent undug index.
+        row = np.zeros_like(state[:, :-1])
+        print(row)
 
         # like cumsum of number of index
 
