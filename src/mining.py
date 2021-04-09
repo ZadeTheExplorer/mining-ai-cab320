@@ -138,6 +138,7 @@ class Mine(search.Problem):
 
     States must be tuple-based.
     """
+
     def __init__(self, underground, dig_tolerance=1):
         '''
         Constructor
@@ -175,7 +176,7 @@ class Mine(search.Problem):
                                   axis=1 if underground.ndim == 2 else 2)
 
         self.initial = np.zeros((self.len_x if self.len_y is
-                                 None else (self.len_x, self.len_y)),
+                                               None else (self.len_x, self.len_y)),
                                 dtype=int)
 
     def surface_neighbours(self, loc):
@@ -210,7 +211,7 @@ class Mine(search.Problem):
                            (0, -1), (0, +1),
                            (+1, -1), (+1, 0), (+1, +1)):
                 if ((0 <= loc[0] + dx < self.len_x) and
-                   (0 <= loc[1] + dy < self.len_y)):
+                        (0 <= loc[1] + dy < self.len_y)):
                     L.append((loc[0] + dx, loc[1] + dy))
         return L
 
@@ -231,7 +232,7 @@ class Mine(search.Problem):
         a generator of valid actions
         '''
         state = np.array(state)
-
+        # Using BFS or DFS, (suggest DFS)
         raise NotImplementedError
 
     def result(self, state, action):
@@ -254,6 +255,7 @@ class Mine(search.Problem):
         None.
         '''
         print('Mine of depth {}'.format(self.len_z))
+        print('Mine of width {}'.format(self.len_x))
         if self.underground.ndim == 2:
             # 2D mine
             print('Plane x,z view')
@@ -315,21 +317,25 @@ class Mine(search.Problem):
         '''
         # convert to np.array in order to use tuple addressing
         # state[loc]   where loc is a tuple
-        state = np.array(state)
-        print(state)
+        state_2 = np.array(state)
+        print("state", state)
         # 0 is undug not first index
         # append row of 0 to represent undug index.
-        row = np.zeros_like(state[:, :-1])
-        print(row)
+        row = np.zeros_like(state[:]) if self.len_y is None else np.zeros_like(state[:, :-1])
+        print("row?", row)
 
         # like cumsum of number of index
 
+        # Not a proper function but it done its job
+        payoff = sum([self.underground[i][j] for i in range(self.len_x) for j in range(state[i])])
+        return payoff
+
     def is_dangerous(self, state):
-        '''
+        """
         Return True if the given state breaches the dig_tolerance constraints.
 
         No loops needed in the implementation!
-        '''
+        """
         # convert to np.array in order to use numpy operators
         state = np.array(state)
         if any(np.greater(np.abs(np.diff(state)),
@@ -341,7 +347,7 @@ class Mine(search.Problem):
 
 
 def search_dp_dig_plan(mine):
-    '''
+    """
     Search using Dynamic Programming the most profitable sequence of
     digging actions from the initial state of the mine.
 
@@ -355,12 +361,12 @@ def search_dp_dig_plan(mine):
     Returns
     -------
     best_payoff, best_action_list, best_final_state
-    '''
+    """
     raise NotImplementedError
 
 
 def search_bb_dig_plan(mine):
-    '''
+    """
     Compute, using Branch and Bound, the most profitable sequence of
     digging actions from the initial state of the mine.
 
@@ -373,7 +379,7 @@ def search_bb_dig_plan(mine):
     Returns
     -------
     best_payoff, best_action_list, best_final_state
-    '''
+    """
     raise NotImplementedError
 
 

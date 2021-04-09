@@ -33,8 +33,8 @@ def v_array(shape):
     """
 
     """
-    part1_col = np.arange(np.ceil(shape[0]/2))
-    part2_col = np.flip(np.arange(np.floor(shape[0]/2)))
+    part1_col = np.arange(np.ceil(shape[0] / 2))
+    part2_col = np.flip(np.arange(np.floor(shape[0] / 2)))
     column = np.append(part1_col, part2_col)
     array = np.tile(column, (shape[-1], 1))
     return np.transpose(array)
@@ -64,9 +64,12 @@ if __name__ == "__main__":
     Quarry = Mine(MINE_1)
     Quarry.console_display()
     print(Quarry.initial)
-    print(Quarry.surface_neighbours((4,)))
-    print(Quarry.is_dangerous((0, 0, 0, 0, 1, 0, 0, 0)))
-    print(Quarry.is_dangerous((0, 0, 0, 0, 5, 0, 0, 0)))
-    print(Quarry.is_dangerous((5, 3, 2, 1, 0, 0, 0, 0, 0)))
-    print(Quarry.plot_state(np.array((1, 2, 3, 2, 1, 0, 0, 0))))
-    Quarry.payoff(np.array((1, 2, 3, 2, 1, 0, 0, 0)))
+
+    print("neighbours:", Quarry.surface_neighbours((4,)))
+    print("is_dangerous 1:", Quarry.is_dangerous((0, 0, 0, 0, 1, 0, 0, 0, 0)))
+
+    print("is_dangerous 2:", Quarry.is_dangerous((0, 0, 0, 1, 2, 1, 0, 0, 0)))
+
+    print("is_dangerous 3:", Quarry.is_dangerous((3, 4, 5, 4, 5, 4, 3, 2, 1)))
+    Quarry.plot_state(np.array((1, 2, 3, 2, 1, 0, 0, 0, 0)))
+    print("payoff:", Quarry.payoff(np.array((1, 2, 3, 2, 1, 0, 0, 0, 0))))
