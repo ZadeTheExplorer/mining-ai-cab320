@@ -304,14 +304,6 @@ class Mine(search.Problem):
         #
         plt.show()
 
-    def sumrowsby_index_v2(self, a, index):
-        lens = np.array([len(i) for i in index])
-        id_ar = np.zeros((len(lens), a.shape[0]))
-        c = np.concatenate(index)
-        r = np.repeat(np.arange(len(index)), lens)
-        id_ar[r, c] = 1
-        return id_ar.dot(a)
-
     def payoff(self, state):
         '''
         Compute and return the payoff for the given state.
@@ -322,29 +314,12 @@ class Mine(search.Problem):
         # convert to np.array in order to use tuple addressing
         # state[loc]   where loc is a tuple
         state = np.array(state)
-        print(state)
-        # 0 is undug not first index
-        # append row of 0 to represent undug index.
-        if self.underground.ndim == 2:
-            shape = (self.underground.shape[0],
-                     self.underground.shape[1] + 1)
-            temp_ug = np.zeros(shape, np.integer)
-            temp_ug[:, 1:] = np.copy(self.underground)
-            array = np.full_like(temp_ug, True).tolist()
-            mask = np.zeros_like(temp_ug)
-            dug = [array[i][0:x + 1] for i, x in enumerate(state, 0)]
-            np_dug = np.array(list(itertools.zip_longest(*dug, fillvalue=0))).T
-            mask[:np_dug.shape[0], :np_dug.shape[1]] = np_dug
-            payoff = np.sum(temp_ug, where=np.array(mask, dtype=bool))
-            return payoff
-        else:
-            shape = (self.underground.shape[0],
-                     self.underground.shape[1] + 1,
-                     self.underground.shape[2])
-            temp_ug = np.zeros(shape)
-            temp_ug[:, 1:, :] = np.copy(self.underground)
 
-        # like cumsum of number of index
+        if self.underground.ndim == 2:
+            mask = state[:, None] > np.arange(self.underground.shape[1])
+            return np.sum(self.underground, where=mask)
+        else:
+            pass
 
     def is_dangerous(self, state):
         '''

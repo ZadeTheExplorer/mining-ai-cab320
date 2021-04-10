@@ -6,9 +6,9 @@ This is the file which will run the mining solutions
 
 from mining import my_team, Mine, search_dp_dig_plan
 from mining import search_bb_dig_plan, find_action_sequence
-from prac_mines import MINE_1
 
 import numpy as np
+import prac_mines as pm
 
 
 def return_mine(third=False, shape=None, style=None):
@@ -60,7 +60,7 @@ def random_shape(third):
 
 
 def sumrowsby_index_v2(a, index):
-    lens = np.array([len(i) for i in index])
+    lens = np.array([i for i in index])
     id_ar = np.zeros((len(lens), a.shape[0]))
     c = np.concatenate(index)
     r = np.repeat(np.arange(len(index)), lens)
@@ -70,12 +70,6 @@ def sumrowsby_index_v2(a, index):
 
 if __name__ == "__main__":
     # underground = return_mine(style="v")
-    Quarry = Mine(MINE_1)
+    Quarry = Mine(pm.MINE_2D)
     Quarry.console_display()
-    print(Quarry.initial)
-    print(Quarry.surface_neighbours((4,)))
-    print(Quarry.is_dangerous((0, 0, 0, 0, 1, 0, 0, 0)))
-    print(Quarry.is_dangerous((0, 0, 0, 0, 5, 0, 0, 0)))
-    print(Quarry.is_dangerous((5, 3, 2, 1, 0, 0, 0, 0, 0)))
-    # print(Quarry.plot_state(np.array((1, 2, 3, 2, 1, 0, 0, 0))))
-    print(Quarry.payoff(np.array((1, 2, 3, 2, 1, 0, 0, 0, 0))))
+    print(Quarry.payoff(pm.MINE_2D_FINAL_STATE))
