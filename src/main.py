@@ -59,6 +59,15 @@ def random_shape(third):
             np.random.randint(2, 10))
 
 
+def sumrowsby_index_v2(a, index):
+    lens = np.array([len(i) for i in index])
+    id_ar = np.zeros((len(lens), a.shape[0]))
+    c = np.concatenate(index)
+    r = np.repeat(np.arange(len(index)), lens)
+    id_ar[r, c] = 1
+    return id_ar.dot(a)
+
+
 if __name__ == "__main__":
     # underground = return_mine(style="v")
     Quarry = Mine(MINE_1)
@@ -68,5 +77,5 @@ if __name__ == "__main__":
     print(Quarry.is_dangerous((0, 0, 0, 0, 1, 0, 0, 0)))
     print(Quarry.is_dangerous((0, 0, 0, 0, 5, 0, 0, 0)))
     print(Quarry.is_dangerous((5, 3, 2, 1, 0, 0, 0, 0, 0)))
-    print(Quarry.plot_state(np.array((1, 2, 3, 2, 1, 0, 0, 0))))
-    Quarry.payoff(np.array((1, 2, 3, 2, 1, 0, 0, 0)))
+    # print(Quarry.plot_state(np.array((1, 2, 3, 2, 1, 0, 0, 0))))
+    print(Quarry.payoff(np.array((1, 2, 3, 2, 1, 0, 0, 0, 0))))
