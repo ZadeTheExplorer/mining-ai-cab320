@@ -70,6 +70,6 @@ def sumrowsby_index_v2(a, index):
 
 if __name__ == "__main__":
     # underground = return_mine(style="v")
-    Quarry = Mine(pm.MINE_2D)
+    Quarry = Mine(pm.MINE_3D)
     Quarry.console_display()
-    print(Quarry.payoff(pm.MINE_2D_FINAL_STATE))
+    print(Quarry.payoff(pm.MINE_3D_FINAL_STATE))

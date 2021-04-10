@@ -319,7 +319,8 @@ class Mine(search.Problem):
             mask = state[:, None] > np.arange(self.underground.shape[1])
             return np.sum(self.underground, where=mask)
         else:
-            pass
+            mask = state[:, :, None] > np.arange(self.underground.shape[2])
+            return np.sum(self.underground, where=mask)
 
     def is_dangerous(self, state):
         '''

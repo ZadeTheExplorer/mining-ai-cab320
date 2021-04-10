@@ -57,3 +57,9 @@ class TestCase:
         quarry = Mine(pm.MINE_2D)
         assert (quarry.payoff(pm.MINE_2D_FINAL_STATE) ==
                 pm.MINE_2D_PAYOFF)
+
+    def test_payoff_3d(self):
+        # check given mine
+        quarry = Mine(pm.MINE_3D)
+        assert (quarry.payoff(pm.MINE_3D_FINAL_STATE) ==
+                pm.MINE_3D_PAYOFF)
