@@ -201,7 +201,36 @@ class Mine(search.Problem):
         '''
         state = np.array(state)
 
-        raise NotImplementedError
+        '''
+        Solution Explanation
+        - Take the last entry in the state
+            - This should be the lastest action
+        - Find the surface neighbours of this action
+        - Loop through adding the surface neighbour to the state
+            - After surface neighbour is added, send the entire new state to is_dangerous
+            - If is_dangerous is True, remove surface neighbour from state, and try another is_dangerous
+            - If is_dangerous is False, populate generator with the neighbour
+        - Return the generator
+        '''
+        
+
+        last_location = np.unravel_index(state.length, self.initial.ndim)
+
+        neighbours = self.surface_neighbours(last_location)
+
+        for neighbour in neighbours:
+            self.initial.append(neighbour)
+            result = self.is_dangerous(self.initial)
+            if result == False:
+                self.initial = np.delete(self.initial, -1) #Remove last index (Might not work since I think nparrays are immutable?)
+                break
+            elif result == True:
+                print("Do this")
+                #action_gen.add(neighbour)
+        
+        #return action_gen
+
+        #raise NotImplementedError
 
     def result(self, state, action):
         """
@@ -287,6 +316,9 @@ class Mine(search.Problem):
         Solution Explanation
         - Sum the elements in Underground if they match values in State
         - Should only sum elements of Underground that are in State
+
+        Need to get the index of the state (as this is the x or x,y) and then the value is the z
+        These values should be compared to the self.underground
         '''
         if (self.underground.ndim == 2):
             payoff = sum((x,z) for (x,z) in self.underground if x in state == self.underground(x,))
