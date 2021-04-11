@@ -36,12 +36,11 @@ import matplotlib.pyplot as plt
 # from mpl_toolkits.mplot3d import Axes3D  # noqa: F401 unused import
 
 import itertools
-
 import functools  # @lru_cache(maxsize=32)
+import time
+import search
 
 from numbers import Number
-
-import search
 
 
 def convert_to_tuple(a):
@@ -178,6 +177,7 @@ class Mine(search.Problem):
         self.initial = np.zeros((self.len_x if self.len_y is
                                  None else (self.len_x, self.len_y)),
                                 dtype=int)
+        self.initial = tuple(self.initial)
 
     def surface_neighbours(self, loc):
         '''
@@ -410,7 +410,12 @@ def search_bb_dig_plan(mine):
     -------
     best_payoff, best_action_list, best_final_state
     '''
-    raise NotImplementedError
+    quarry = mine
+    t0 = time.time()
+    sol_ts = search.uniform_cost_search(quarry)  # graph search version
+    t1 = time.time()
+    print('BFS Solver took {:.6f} seconds'.format(t1-t0))
+    print(sol_ts.path())
 
 
 def find_action_sequence(s0, s1):

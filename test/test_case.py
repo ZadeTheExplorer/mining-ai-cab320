@@ -37,9 +37,9 @@ class TestCase_2D:
 
     def test_initial(self):
         quarry = Mine(pm.CONTROL_1)
-        assert (len(quarry.initial.shape) ==
+        assert (len(np.array(quarry.initial).shape) ==
                 (len(pm.CONTROL_1.shape) - 1))
-        assert quarry.initial.shape[0] == pm.CONTROL_1.shape[0]
+        assert np.array(quarry.initial).shape[0] == pm.CONTROL_1.shape[0]
 
     def test_dangerous_2d(self):
         quarry = Mine(pm.CONTROL_1)
@@ -82,9 +82,9 @@ class TestCase_3D:
 
     def test_initial(self):
         quarry = Mine(pm.CONTROL_2)
-        assert (len(quarry.initial.shape) ==
+        assert (len(np.array(quarry.initial).shape) ==
                 (len(pm.CONTROL_2.shape) - 1))
-        assert quarry.initial.shape[0] == pm.CONTROL_2.shape[0]
+        assert np.array(quarry.initial).shape[0] == pm.CONTROL_2.shape[0]
 
     def test_dangerous_3d(self):
         quarry = Mine(pm.CONTROL_2)
