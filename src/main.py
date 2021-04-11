@@ -59,17 +59,8 @@ def random_shape(third):
             np.random.randint(2, 10))
 
 
-def sumrowsby_index_v2(a, index):
-    lens = np.array([i for i in index])
-    id_ar = np.zeros((len(lens), a.shape[0]))
-    c = np.concatenate(index)
-    r = np.repeat(np.arange(len(index)), lens)
-    id_ar[r, c] = 1
-    return id_ar.dot(a)
-
-
 if __name__ == "__main__":
     # underground = return_mine(style="v")
-    Quarry = Mine(pm.MINE_3D)
-    Quarry.console_display()
-    print(Quarry.payoff(pm.MINE_3D_FINAL_STATE))
+    Quarry = Mine(pm.CONTROL_2)
+    print(np.info(Quarry.cumsum_mine))
+    print(np.info(pm.CONTROL_2_CUMSUM))

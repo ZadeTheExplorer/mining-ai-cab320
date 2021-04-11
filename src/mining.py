@@ -171,8 +171,9 @@ class Mine(search.Problem):
                       else underground.shape[2])
         self.len_y = underground.shape[1] if underground.ndim == 3 else None
 
-        self.cumsum_mine = np.sum(underground,
-                                  axis=1 if underground.ndim == 2 else 2)
+        self.cumsum_mine = np.cumsum(underground,
+                                     axis=-1,
+                                     dtype=float)
 
         self.initial = np.zeros((self.len_x if self.len_y is
                                  None else (self.len_x, self.len_y)),
@@ -232,7 +233,25 @@ class Mine(search.Problem):
         '''
         state = np.array(state)
 
-        raise NotImplementedError
+        def pass_to(state, x, y=None):
+            updated = state.copy()
+            if y is None:
+                np.add.at(updated, x, 1)
+                if updated[x] > self.len_z:
+                    return True
+            else:
+                np.add.at(updated, (x, y), 1)
+                if updated[x, y] > self.len_z:
+                    return True
+            return self.is_dangerous(updated)
+
+        if self.underground.ndim == 2:
+            return ((x,) for x, z in zip(np.arange(self.len_x), state)
+                    if not pass_to(state, x))
+        else:
+            return ((y, x) for x, z in zip(np.arange(self.len_x), state[1])
+                    for y in np.arange(len(state[1])) if not
+                    pass_to(state, x, y))
 
     def result(self, state, action):
         """
@@ -330,9 +349,28 @@ class Mine(search.Problem):
         '''
         # convert to np.array in order to use numpy operators
         state = np.array(state)
-        if any(np.greater(np.abs(np.diff(state)),
-                          self.dig_tolerance)):
+
+        # get the diff along the x dim
+        x_diff = np.greater(np.abs(np.diff(state, axis=0)),
+                            self.dig_tolerance)
+        if x_diff.any():
             return True
+
+        # if we have a 3d underground
+        if self.underground.ndim == 3:
+            # get the diff along the y dim
+            y_diff = np.greater(np.abs(np.diff(state, axis=1)),
+                                self.dig_tolerance)
+            if y_diff.any():
+                return True
+            # now work out the diff for the diagonals
+            diag_1 = np.greater(np.abs((state[:-1, :-1] - state[1:, 1:])),
+                                self.dig_tolerance)
+            n_state = np.rot90(state)
+            diag_2 = np.greater(np.abs((n_state[:-1, :-1] - n_state[1:, 1:])),
+                                self.dig_tolerance)
+            if diag_1.any() or diag_2.any():
+                return True
         return False
 
     # ========================  Class Mine  ==================================
