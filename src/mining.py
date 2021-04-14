@@ -177,7 +177,7 @@ class Mine(search.Problem):
         self.initial = np.zeros((self.len_x if self.len_y is
                                  None else (self.len_x, self.len_y)),
                                 dtype=int)
-        self.initial = tuple(self.initial)
+        self.initial = convert_to_tuple(self.initial)
 
     def surface_neighbours(self, loc):
         '''
@@ -234,8 +234,15 @@ class Mine(search.Problem):
         state = np.array(state)
 
         def pass_to(state, x, y=None):
+            """
+            This is a local helper function for the generators.
+            :Param state: The np.array of the state.
+            :Param x: The current x coord we are testing.
+            :Param y: The current y coord we are testing if required.
+            """
             updated = state.copy()
-            if y is None:
+            # Check to see if we have dug to far down.
+            if y is None:  # Its a 1D state we are testing.
                 np.add.at(updated, x, 1)
                 if updated[x] > self.len_z:
                     return True
@@ -243,13 +250,15 @@ class Mine(search.Problem):
                 np.add.at(updated, (x, y), 1)
                 if updated[x, y] > self.len_z:
                     return True
+            # Else test if it is dangerous.
             return self.is_dangerous(updated)
 
+        # The generators which will return a valid action.
         if self.underground.ndim == 2:
             return ((x,) for x, z in zip(np.arange(self.len_x), state)
                     if not pass_to(state, x))
         else:
-            return ((y, x) for x, z in zip(np.arange(self.len_x), state[1])
+            return ((x, y) for x, z in zip(np.arange(self.len_x), state[1])
                     for y in np.arange(len(state[1])) if not
                     pass_to(state, x, y))
 
@@ -335,9 +344,11 @@ class Mine(search.Problem):
         state = np.array(state)
 
         if self.underground.ndim == 2:
+            # Create a mask using the state and then sum
             mask = state[:, None] > np.arange(self.underground.shape[1])
             return np.sum(self.underground, where=mask)
         else:
+            # As above
             mask = state[:, :, None] > np.arange(self.underground.shape[2])
             return np.sum(self.underground, where=mask)
 
@@ -372,6 +383,16 @@ class Mine(search.Problem):
             if diag_1.any() or diag_2.any():
                 return True
         return False
+
+    def h(self, n):
+        """
+        h(n) for our astar algorithm. This takes the difference in states
+        between the goal and the current to assist in driving the outcome
+        to zero.
+        :Param n: The current Node.
+        """
+        difference = np.sum(np.abs(np.array(self.goal) - np.array(n.state)))
+        return difference
 
     # ========================  Class Mine  ==================================
 
@@ -411,11 +432,22 @@ def search_bb_dig_plan(mine):
     best_payoff, best_action_list, best_final_state
     '''
     quarry = mine
-    t0 = time.time()
-    sol_ts = search.uniform_cost_search(quarry)  # graph search version
-    t1 = time.time()
-    print('BFS Solver took {:.6f} seconds'.format(t1-t0))
-    print(sol_ts.path())
+    # you can place the search function names in here to run
+    # multiple to compare.
+    searches = ["astar_graph_search"]
+    # loop through our list and run the searches.
+    for searcher in searches:
+        # this will get our function
+        fn = getattr(search, searcher)  # eqv to search.{function}
+        t0 = time.time()
+        # this will run the function
+        if searcher == "astar_graph_search":
+            sol_ts = fn(quarry, quarry.h)
+        else:
+            sol_ts = fn(quarry)
+        t1 = time.time()
+        print(f'The solver {searcher} took {t1-t0} seconds')
+        print(sol_ts.path())
 
 
 def find_action_sequence(s0, s1):
