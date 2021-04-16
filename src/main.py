@@ -4,11 +4,11 @@
 This is the file which will run the mining solutions
 """
 
-from mining import my_team, Mine, search_dp_dig_plan
+from mining import my_team, Mine, search_dp_dig_plan, convert_to_tuple
 from mining import search_bb_dig_plan, find_action_sequence
-from prac_mines import MINE_1
 
 import numpy as np
+import prac_mines as pm
 
 
 def return_mine(third=False, shape=None, style=None):
@@ -33,8 +33,8 @@ def v_array(shape):
     """
 
     """
-    part1_col = np.arange(np.ceil(shape[0] / 2))
-    part2_col = np.flip(np.arange(np.floor(shape[0] / 2)))
+    part1_col = np.arange(np.ceil(shape[0]/2))
+    part2_col = np.flip(np.arange(np.floor(shape[0]/2)))
     column = np.append(part1_col, part2_col)
     array = np.tile(column, (shape[-1], 1))
     return np.transpose(array)
@@ -61,15 +61,7 @@ def random_shape(third):
 
 if __name__ == "__main__":
     # underground = return_mine(style="v")
-    Quarry = Mine(MINE_1)
-    Quarry.console_display()
-    print(Quarry.initial)
-
-    print("neighbours:", Quarry.surface_neighbours((4,)))
-    print("is_dangerous 1:", Quarry.is_dangerous((0, 0, 0, 0, 1, 0, 0, 0, 0)))
-
-    print("is_dangerous 2:", Quarry.is_dangerous((0, 0, 0, 1, 2, 1, 0, 0, 0)))
-
-    print("is_dangerous 3:", Quarry.is_dangerous((3, 4, 5, 4, 5, 4, 3, 2, 1)))
-    Quarry.plot_state(np.array((1, 2, 3, 2, 1, 0, 0, 0, 0)))
-    print("payoff:", Quarry.payoff(np.array((1, 2, 3, 2, 1, 0, 0, 0, 0))))
+    quarry = Mine(pm.MINE_2D)
+    quarry.goal = convert_to_tuple(np.array(pm.MINE_2D_FINAL_STATE))
+    print(quarry.cumsum_mine.T)
+    search_bb_dig_plan(quarry)

@@ -36,12 +36,11 @@ import matplotlib.pyplot as plt
 # from mpl_toolkits.mplot3d import Axes3D  # noqa: F401 unused import
 
 import itertools
-
 import functools  # @lru_cache(maxsize=32)
+import time
+import search
 
 from numbers import Number
-
-import search
 
 
 def convert_to_tuple(a):
@@ -138,7 +137,6 @@ class Mine(search.Problem):
 
     States must be tuple-based.
     """
-
     def __init__(self, underground, dig_tolerance=1):
         '''
         Constructor
@@ -172,12 +170,14 @@ class Mine(search.Problem):
                       else underground.shape[2])
         self.len_y = underground.shape[1] if underground.ndim == 3 else None
 
-        self.cumsum_mine = np.sum(underground,
-                                  axis=1 if underground.ndim == 2 else 2)
+        self.cumsum_mine = np.cumsum(underground,
+                                     axis=-1,
+                                     dtype=float)
 
         self.initial = np.zeros((self.len_x if self.len_y is
-                                               None else (self.len_x, self.len_y)),
+                                 None else (self.len_x, self.len_y)),
                                 dtype=int)
+        self.initial = convert_to_tuple(self.initial)
 
     def surface_neighbours(self, loc):
         '''
@@ -211,7 +211,7 @@ class Mine(search.Problem):
                            (0, -1), (0, +1),
                            (+1, -1), (+1, 0), (+1, +1)):
                 if ((0 <= loc[0] + dx < self.len_x) and
-                        (0 <= loc[1] + dy < self.len_y)):
+                   (0 <= loc[1] + dy < self.len_y)):
                     L.append((loc[0] + dx, loc[1] + dy))
         return L
 
@@ -232,8 +232,35 @@ class Mine(search.Problem):
         a generator of valid actions
         '''
         state = np.array(state)
-        # Using BFS or DFS, (suggest DFS)
-        raise NotImplementedError
+
+        def pass_to(state, x, y=None):
+            """
+            This is a local helper function for the generators.
+            :Param state: The np.array of the state.
+            :Param x: The current x coord we are testing.
+            :Param y: The current y coord we are testing if required.
+            """
+            updated = state.copy()
+            # Check to see if we have dug to far down.
+            if y is None:  # Its a 1D state we are testing.
+                np.add.at(updated, x, 1)
+                if updated[x] > self.len_z:
+                    return True
+            else:
+                np.add.at(updated, (x, y), 1)
+                if updated[x, y] > self.len_z:
+                    return True
+            # Else test if it is dangerous.
+            return self.is_dangerous(updated)
+
+        # The generators which will return a valid action.
+        if self.underground.ndim == 2:
+            return ((x,) for x, z in zip(np.arange(self.len_x), state)
+                    if not pass_to(state, x))
+        else:
+            return ((x, y) for x, z in zip(np.arange(self.len_x), state[1])
+                    for y in np.arange(len(state[1])) if not
+                    pass_to(state, x, y))
 
     def result(self, state, action):
         """
@@ -255,7 +282,6 @@ class Mine(search.Problem):
         None.
         '''
         print('Mine of depth {}'.format(self.len_z))
-        print('Mine of width {}'.format(self.len_x))
         if self.underground.ndim == 2:
             # 2D mine
             print('Plane x,z view')
@@ -275,8 +301,6 @@ class Mine(search.Problem):
             return '\n'.join('level {}\n'.format(z)
                              + str(self.underground[..., z]) for z in
                              range(self.len_z))
-
-            return self.underground[loc[0], loc[1], :]
 
     @staticmethod
     def plot_state(state):
@@ -317,37 +341,64 @@ class Mine(search.Problem):
         '''
         # convert to np.array in order to use tuple addressing
         # state[loc]   where loc is a tuple
-        state_2 = np.array(state)
-        print("state", state)
-        # 0 is undug not first index
-        # append row of 0 to represent undug index.
-        row = np.zeros_like(state[:]) if self.len_y is None else np.zeros_like(state[:, :-1])
-        print("row?", row)
+        state = np.array(state)
 
-        # like cumsum of number of index
-
-        # Not a proper function but it done its job
-        payoff = sum([self.underground[i][j] for i in range(self.len_x) for j in range(state[i])])
-        return payoff
+        if self.underground.ndim == 2:
+            # Create a mask using the state and then sum
+            mask = state[:, None] > np.arange(self.underground.shape[1])
+            return np.sum(self.underground, where=mask)
+        else:
+            # As above
+            mask = state[:, :, None] > np.arange(self.underground.shape[2])
+            return np.sum(self.underground, where=mask)
 
     def is_dangerous(self, state):
-        """
+        '''
         Return True if the given state breaches the dig_tolerance constraints.
 
         No loops needed in the implementation!
-        """
+        '''
         # convert to np.array in order to use numpy operators
         state = np.array(state)
-        if any(np.greater(np.abs(np.diff(state)),
-                          self.dig_tolerance)):
+
+        # get the diff along the x dim
+        x_diff = np.greater(np.abs(np.diff(state, axis=0)),
+                            self.dig_tolerance)
+        if x_diff.any():
             return True
+
+        # if we have a 3d underground
+        if self.underground.ndim == 3:
+            # get the diff along the y dim
+            y_diff = np.greater(np.abs(np.diff(state, axis=1)),
+                                self.dig_tolerance)
+            if y_diff.any():
+                return True
+            # now work out the diff for the diagonals
+            diag_1 = np.greater(np.abs((state[:-1, :-1] - state[1:, 1:])),
+                                self.dig_tolerance)
+            n_state = np.rot90(state)
+            diag_2 = np.greater(np.abs((n_state[:-1, :-1] - n_state[1:, 1:])),
+                                self.dig_tolerance)
+            if diag_1.any() or diag_2.any():
+                return True
         return False
+
+    def h(self, n):
+        """
+        h(n) for our astar algorithm. This takes the difference in states
+        between the goal and the current to assist in driving the outcome
+        to zero.
+        :Param n: The current Node.
+        """
+        difference = np.sum(np.abs(np.array(self.goal) - np.array(n.state)))
+        return difference
 
     # ========================  Class Mine  ==================================
 
 
 def search_dp_dig_plan(mine):
-    """
+    '''
     Search using Dynamic Programming the most profitable sequence of
     digging actions from the initial state of the mine.
 
@@ -361,12 +412,12 @@ def search_dp_dig_plan(mine):
     Returns
     -------
     best_payoff, best_action_list, best_final_state
-    """
+    '''
     raise NotImplementedError
 
 
 def search_bb_dig_plan(mine):
-    """
+    '''
     Compute, using Branch and Bound, the most profitable sequence of
     digging actions from the initial state of the mine.
 
@@ -379,8 +430,24 @@ def search_bb_dig_plan(mine):
     Returns
     -------
     best_payoff, best_action_list, best_final_state
-    """
-    raise NotImplementedError
+    '''
+    quarry = mine
+    # you can place the search function names in here to run
+    # multiple to compare.
+    searches = ["astar_graph_search"]
+    # loop through our list and run the searches.
+    for searcher in searches:
+        # this will get our function
+        fn = getattr(search, searcher)  # eqv to search.{function}
+        t0 = time.time()
+        # this will run the function
+        if searcher == "astar_graph_search":
+            sol_ts = fn(quarry, quarry.h)
+        else:
+            sol_ts = fn(quarry)
+        t1 = time.time()
+        print(f'The solver {searcher} took {t1-t0} seconds')
+        print(sol_ts.path())
 
 
 def find_action_sequence(s0, s1):
