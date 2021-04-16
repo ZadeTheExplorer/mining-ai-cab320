@@ -62,6 +62,7 @@ def random_shape(third):
 if __name__ == "__main__":
     # underground = return_mine(style="v")
     quarry = Mine(pm.MINE_2D)
+    quarry.console_display()
     quarry.goal = convert_to_tuple(np.array(pm.MINE_2D_FINAL_STATE))
     print(quarry.cumsum_mine.T)
     search_bb_dig_plan(quarry)
