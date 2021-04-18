@@ -178,6 +178,10 @@ class Mine(search.Problem):
                                  None else (self.len_x, self.len_y)),
                                 dtype=int)
         self.initial = convert_to_tuple(self.initial)
+        self.goal = np.zeros((self.len_x if self.len_y is
+                              None else (self.len_x, self.len_y)),
+                             dtype=int)
+        self.goal = convert_to_tuple(self.goal)
 
     def surface_neighbours(self, loc):
         '''
@@ -384,15 +388,21 @@ class Mine(search.Problem):
                 return True
         return False
 
-    def h(self, n):
+    def goal_test(self, state):
         """
-        h(n) for our astar algorithm. This takes the difference in states
-        between the goal and the current to assist in driving the outcome
-        to zero.
-        :Param n: The current Node.
+
+        :Param state: State tuple of the node to be tested.
         """
-        difference = np.sum(np.abs(np.array(self.goal) - np.array(n.state)))
-        return difference
+        if self.payoff(state) > self.payoff(self.goal):
+            self.goal = state
+        return False
+
+    def b(self, n):
+        """
+
+        :Param n: A Node being assessed.
+        """
+        return self.payoff(n.state)
 
     # ========================  Class Mine  ==================================
 
@@ -431,23 +441,13 @@ def search_bb_dig_plan(mine):
     -------
     best_payoff, best_action_list, best_final_state
     '''
-    quarry = mine
-    # you can place the search function names in here to run
-    # multiple to compare.
-    searches = ["astar_graph_search"]
-    # loop through our list and run the searches.
-    for searcher in searches:
-        # this will get our function
-        fn = getattr(search, searcher)  # eqv to search.{function}
-        t0 = time.time()
-        # this will run the function
-        if searcher == "astar_graph_search":
-            sol_ts = fn(quarry, quarry.h)
-        else:
-            sol_ts = fn(quarry)
-        t1 = time.time()
-        print(f'The solver {searcher} took {t1-t0} seconds')
-        print(sol_ts.path())
+    t0 = time.time()
+    search.astar_tree_search(mine, mine.b)
+    t1 = time.time()
+
+    print (f'BB took {round(t1-t0, 5)} seconds')
+    print(mine.goal)
+    print(mine.payoff(mine.goal))
 
 
 def find_action_sequence(s0, s1):
