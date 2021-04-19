@@ -445,7 +445,7 @@ def search_bb_dig_plan(mine):
     search.astar_tree_search(mine, mine.b)
     t1 = time.time()
 
-    print (f'BB took {round(t1-t0, 5)} seconds')
+    print(f'BB took {round(t1-t0, 5)} seconds')
     print(mine.goal)
     print(mine.payoff(mine.goal))
 
@@ -469,4 +469,30 @@ def find_action_sequence(s0, s1):
     """
     # approach: among all columns for which s0 < s1, pick the column loc
     # with the smallest s0[loc]
-    raise NotImplementedError
+
+    # If s0 and s1 is 2d tuple, it means the underground is 3d
+    # Otherwise, s0 and s1 is 1d tuple.
+    # Check legal of s0 < s1
+    assert s0 <= s1
+
+    path = []
+    if s0 == s1:
+        return []
+    s0 = np.array(s0)
+    s1 = np.array(s1)
+    mask = np.full(s0.shape, True)
+    MAX_POSITIVE_NUMBER = 99999999999
+    while not (s0 == s1).all():
+        loc = tuple(np.argwhere((s0 == np.min(s0,
+                                              where=mask,
+                                              initial=MAX_POSITIVE_NUMBER))
+                                & mask)[0])
+
+        if s0[loc] >= s1[loc]:
+            # print(s0, s1)
+            mask[loc] = False
+            continue
+
+        s0[loc] += 1
+        path.append(loc)
+    return path
