@@ -137,6 +137,7 @@ class Mine(search.Problem):
 
     States must be tuple-based.
     """
+
     def __init__(self, underground, dig_tolerance=1):
         '''
         Constructor
@@ -175,7 +176,7 @@ class Mine(search.Problem):
                                      dtype=float)
 
         self.initial = np.zeros((self.len_x if self.len_y is
-                                 None else (self.len_x, self.len_y)),
+                                               None else (self.len_x, self.len_y)),
                                 dtype=int)
         self.initial = convert_to_tuple(self.initial)
 
@@ -211,7 +212,7 @@ class Mine(search.Problem):
                            (0, -1), (0, +1),
                            (+1, -1), (+1, 0), (+1, +1)):
                 if ((0 <= loc[0] + dx < self.len_x) and
-                   (0 <= loc[1] + dy < self.len_y)):
+                        (0 <= loc[1] + dy < self.len_y)):
                     L.append((loc[0] + dx, loc[1] + dy))
         return L
 
@@ -446,7 +447,7 @@ def search_bb_dig_plan(mine):
         else:
             sol_ts = fn(quarry)
         t1 = time.time()
-        print(f'The solver {searcher} took {t1-t0} seconds')
+        print(f'The solver {searcher} took {t1 - t0} seconds')
         print(sol_ts.path())
 
 
@@ -469,4 +470,29 @@ def find_action_sequence(s0, s1):
     """
     # approach: among all columns for which s0 < s1, pick the column loc
     # with the smallest s0[loc]
-    raise NotImplementedError
+
+    # If s0 and s1 is 2d tuple, it means the underground is 3d
+    # Otherwise, s0 and s1 is 1d tuple.
+    # Check legal of s0 < s1
+    assert s0 <= s1
+
+    path = []
+    if s0 == s1:
+        return []
+    s0 = np.array(s0)
+    s1 = np.array(s1)
+    mask = np.full(s0.shape, True)
+    MAX_POSITIVE_NUMBER = 99999999999
+    while not (s0 == s1).all():
+        loc = tuple(np.argwhere((s0 == np.min(s0, where=mask, initial=MAX_POSITIVE_NUMBER)) & mask)[0])
+
+        if s0[loc] >= s1[loc]:
+            # print(s0, s1)
+            mask[loc] = False
+            continue
+
+        s0[loc] += 1
+        path.append(loc)
+    return path
+
+

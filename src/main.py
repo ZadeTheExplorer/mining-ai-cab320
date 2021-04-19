@@ -66,3 +66,11 @@ if __name__ == "__main__":
     quarry.goal = convert_to_tuple(np.array(pm.MINE_2D_FINAL_STATE))
     print(quarry.cumsum_mine.T)
     search_bb_dig_plan(quarry)
+
+    path = find_action_sequence(((0, 0, 0, 0),
+                       (0, 0, 0, 0),
+                       (0, 0, 0, 0)), pm.MINE_3D_FINAL_STATE)
+    print("path 3d", path)
+
+    path = find_action_sequence((0, 0, 0, 0, 0), pm.MINE_2D_FINAL_STATE)
+    print("path 2d", path)
