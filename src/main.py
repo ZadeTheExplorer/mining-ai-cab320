@@ -72,5 +72,5 @@ if __name__ == "__main__":
                        (0, 0, 0, 0)), pm.MINE_3D_FINAL_STATE)
     print("path 3d", path)
 
-    path = find_action_sequence((0, 0, 0, 0, 0), pm.MINE_2D_FINAL_STATE)
+    path = find_action_sequence((1, 2, 1, 0, 0), pm.MINE_2D_FINAL_STATE)
     print("path 2d", path)

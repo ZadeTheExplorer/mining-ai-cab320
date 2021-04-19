@@ -38,7 +38,7 @@ import matplotlib.pyplot as plt
 import itertools
 import functools  # @lru_cache(maxsize=32)
 import time
-import search
+from search import Node, Problem, PriorityQueue
 
 from numbers import Number
 
@@ -107,7 +107,7 @@ def my_team():
             (10273913, 'Sy', 'Ha')]
 
 
-class Mine(search.Problem):
+class Mine(Problem):
     """
     Mine represent an open mine problem defined by a grid of cells
     of various values. The grid is called 'underground'. It can be
@@ -414,7 +414,34 @@ def search_dp_dig_plan(mine):
     -------
     best_payoff, best_action_list, best_final_state
     '''
-    raise NotImplementedError
+    best_payoff = None
+    best_action_list = None
+    best_final_state = None
+
+    def sub_prob(s, action):
+        node = Node(mine.initial)
+        if mine.goal_test(node.state):
+            return node
+        frontier = PriorityQueue(f=lambda n: n.path_cost + mine.h(n))
+        frontier.append(node)
+        explored = set()  # set of states
+        while frontier:
+            node = frontier.pop()
+            if mine.goal_test(node.state):
+                return node
+            explored.add(node.state)
+            for child in node.expand(mine):
+                if child.state not in explored and child not in frontier:
+                    frontier.append(child)
+                elif child in frontier:
+                    # frontier[child] is the f value of the
+                    # incumbent node that shares the same state as
+                    # the node child.  Read implementation of PriorityQueue
+                    if child.path_cost + mine.h(child) < frontier[child]:
+                        del frontier[child]  # delete the incumbent node
+                        frontier.append(child)  #
+        return None
+    return best_payoff, best_action_list, best_final_state
 
 
 def search_bb_dig_plan(mine):
