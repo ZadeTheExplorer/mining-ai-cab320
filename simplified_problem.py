@@ -48,7 +48,7 @@ def actions(underground, state):
             if updated[x, y] > len_z:
                 return True
         # Else test if it is dangerous.
-        return is_dangerous(updated, 1)
+        return is_dangerous(updated, underground, 1)
 
     # The generators which will return a valid action.
     if underground.ndim == 2:
@@ -60,7 +60,7 @@ def actions(underground, state):
                 pass_to(state, x, y))
 
 
-def is_dangerous(state, tolerant):
+def is_dangerous(state, underground, tolerance):
     state = np.array(state)
 
     # print("State ", state)
@@ -68,18 +68,43 @@ def is_dangerous(state, tolerant):
     # print("np.abs ", np.abs(np.diff(state)))
     # print("np.greater ", np.greater(np.abs(np.diff(state)),
     #                       tolerant))
-    for value in np.greater(np.abs(np.diff(state)),
-                          tolerant):
+    # for value in np.greater(np.abs(np.diff(state)),
+    #                       tolerant):
         
-        if (value == True).any():
-            return True
-        else:
-            return False
+    #     if (value == True).any():
+    #         return True
+    #     else:
+    #         return False
 
     # if any(np.greater(np.abs(np.diff(state)),
     #                       tolerant)):
     #     return True
     # return False
+
+    state = np.array(state)
+
+    # get the diff along the x dim
+    x_diff = np.greater(np.abs(np.diff(state, axis=0)),
+                        tolerance)
+    if x_diff.any():
+        return True
+
+    # if we have a 3d underground
+    if underground.ndim == 3:
+        # get the diff along the y dim
+        y_diff = np.greater(np.abs(np.diff(state, axis=1)),
+                            tolerance)
+        if y_diff.any():
+            return True
+        # now work out the diff for the diagonals
+        diag_1 = np.greater(np.abs((state[:-1, :-1] - state[1:, 1:])),
+                            tolerance)
+        n_state = np.rot90(state)
+        diag_2 = np.greater(np.abs((n_state[:-1, :-1] - n_state[1:, 1:])),
+                            tolerance)
+        if diag_1.any() or diag_2.any():
+            return True
+    return False
 
 
 def payoff(array, state):
@@ -107,12 +132,16 @@ def goal_state_3d_with_memo(underground):
     best_payoff = 0
     action_list = []
 
-    #print(underground.shape)
     underg1 = underground.flatten(order="C")
 
     underground_correct = underg1.reshape(3,4,5)
 
-    state = np.zeros((underground.shape[1],underground.shape[2]))
+    cumsum_mine = np.sum(underground,
+                                  axis=1 if underground.ndim == 2 else 2)
+    
+    #print(cumsum_mine)
+
+    state = np.zeros((underground_correct.shape[0],underground_correct.shape[1]))
 
     whole_memo = dict()
 
@@ -127,20 +156,19 @@ def goal_state_3d_with_memo(underground):
 
         #print("Given_state ", given_state)
 
-
         if state_payoff > best_payoff:
             best_payoff = state_payoff
-            best_state = tuple(given_state)
+            best_state = given_state
 
-        print("State Payoff ", state_payoff)
-        print("Best Payoff ", best_payoff)
-        print("Best State ", best_state)
+        #print("State Payoff ", state_payoff)
+        #print("Best Payoff ", best_payoff)
+        #print("Best State ", best_state)
 
         given_state_actions = list(actions(underg, given_state))
 
         whole_memo[str(given_state.flatten(order="C"))] = (given_state_actions, state_payoff)
 
-        #print(whole_memo)
+        print("Memo Entry Payoff for ", str(given_state.flatten(order="C")), " ",whole_memo[str(given_state.flatten(order="C"))][1])
 
         if len(given_state_actions) > 0:
 
@@ -149,11 +177,9 @@ def goal_state_3d_with_memo(underground):
                 new_state = given_state.copy()
                 new_state[action] += 1
 
-                print("New State ", new_state)
+                #print("String New State ", str(new_state.flatten(order="C")))
 
-                print("String ", str(new_state.flatten(order="C")))
-
-                if str(new_state) not in whole_memo:
+                if str(new_state.flatten(order="C")) not in whole_memo:
                     recursive_search(underg, new_state, action, whole_memo)
                         
         else:
@@ -173,6 +199,11 @@ def goal_state_2d_with_memo(underground):
     best_state = ()
     best_payoff = 0
     action_list = []
+
+    cumsum_mine = np.sum(underground,
+                                  axis=1 if underground.ndim == 2 else 2)
+    
+    #print(cumsum_mine)
 
     # Set up state for recursive implementation
     state = np.zeros(underground.shape[0])
