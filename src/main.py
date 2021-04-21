@@ -10,6 +10,8 @@ from mining import search_bb_dig_plan, find_action_sequence
 import numpy as np
 import prac_mines as pm
 
+import time
+
 
 def return_mine(third=False, shape=None, style=None):
     """
@@ -59,9 +61,69 @@ def random_shape(third):
             np.random.randint(2, 10))
 
 
-if __name__ == "__main__":
-    # underground = return_mine(style="v")
+def testing_3D():
     quarry = Mine(pm.MINE_3D)
-    quarry.goal = convert_to_tuple(np.array(pm.MINE_3D_FINAL_STATE))
-    print(quarry.cumsum_mine)
-    search_bb_dig_plan(quarry)
+    quarry.console_display()
+    print("initial")
+    print(quarry.b(quarry.initial))
+    print(quarry.payoff(quarry.initial))
+    print()
+    print("negative")
+    print(quarry.b(((0, 0, 0, 0), (0, 0, 1, 0), (0, 0, 1, 0))))
+    print(quarry.payoff(((0, 0, 0, 0), (0, 0, 1, 0), (0, 0, 1, 0))))
+    print()
+    print("best")
+    print(quarry.b(((2, 1, 1, 1), (1, 1, 0, 1), (0, 0, 0, 1))))
+    print(quarry.payoff(((2, 1, 1, 1), (1, 1, 0, 1), (0, 0, 0, 1))))
+    print()
+    print("just past best")
+    print(quarry.b(((2, 1, 1, 1), (1, 1, 1, 1), (0, 0, 0, 1))))
+    print(quarry.payoff(((2, 1, 1, 1), (1, 1, 1, 1), (0, 0, 0, 1))))
+    print()
+    print("edge")
+    print(quarry.b(((1, 1, 1, 1), (1, 0, 0, 1), (0, 0, 0, 1))))
+    print(quarry.payoff(((1, 1, 1, 1), (1, 0, 0, 1), (0, 0, 0, 1))))
+    print()
+    print("edge 2")
+    print(quarry.b(((1, 1, 1, 1), (1, 1, 0, 1), (0, 0, 0, 1))))
+    print(quarry.payoff(((1, 1, 1, 1), (1, 1, 0, 1), (0, 0, 0, 1))))
+    # print(search_bb_dig_plan(quarry))
+
+
+def testing_2D():
+    quarry = Mine(pm.MINE_2D)
+    quarry.console_display()
+    print(quarry.b((0, 0, 0, 0, 0)))
+    print(quarry.payoff((0, 0, 0, 0, 0)))
+    print(quarry.b((3, 2, 2, 2, 1)))
+    print(quarry.payoff((3, 2, 2, 2, 1)))
+    print(quarry.b((3, 2, 3, 4, 3)))
+    print(quarry.payoff((3, 2, 3, 4, 3)))
+    print(quarry.b((2, 2, 3, 4, 3)))
+    print(quarry.payoff((2, 2, 3, 4, 3)))
+    print(quarry.b((4, 4, 4, 4, 4)))
+    print(quarry.payoff((4, 4, 4, 4, 4)))
+    print(search_bb_dig_plan(quarry))
+
+
+def run_3D():
+    quarry = Mine(pm.MINE_3D)
+    quarry.console_display()
+    tic = time.time()
+    print(search_bb_dig_plan(quarry))
+    toc = time.time()
+    print("time:", toc-tic)
+
+
+def run_2D():
+    quarry = Mine(pm.MINE_2D)
+    quarry.console_display()
+    tic = time.time()
+    print(search_bb_dig_plan(quarry))
+    toc = time.time()
+    print("time:", toc-tic)
+
+
+if __name__ == "__main__":
+    run_2D()
+    run_3D()

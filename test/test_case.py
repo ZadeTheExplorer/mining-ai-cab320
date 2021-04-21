@@ -103,7 +103,7 @@ class TestCase_3D:
         assert (quarry.payoff(pm.MINE_3D_FINAL_STATE) ==
                 pm.MINE_3D_PAYOFF)
 
-        def test_action_sequence_3d(self):
+    def test_action_sequence_3d(self):
         assert (find_action_sequence(pm.MINE_3D_INITIAL,
                                      pm.MINE_3D_FINAL_STATE).sort()
                 == list(pm.MINE_3D_ACTION_LIST).sort())

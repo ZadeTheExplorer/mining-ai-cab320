@@ -178,10 +178,12 @@ class Mine(search.Problem):
                                  None else (self.len_x, self.len_y)),
                                 dtype=int)
         self.initial = convert_to_tuple(self.initial)
-        self.goal = np.zeros((self.len_x if self.len_y is
-                              None else (self.len_x, self.len_y)),
-                             dtype=int)
-        self.goal = convert_to_tuple(self.goal)
+
+        # init for BB
+        goal = np.zeros((self.len_x if self.len_y is
+                         None else (self.len_x, self.len_y)),
+                        dtype=int)
+        self.best = convert_to_tuple(goal)
 
     def surface_neighbours(self, loc):
         '''
@@ -345,6 +347,8 @@ class Mine(search.Problem):
         '''
         # convert to np.array in order to use tuple addressing
         # state[loc]   where loc is a tuple
+
+        assert not isinstance(state, search.Node)
         state = np.array(state)
 
         if self.underground.ndim == 2:
@@ -390,19 +394,33 @@ class Mine(search.Problem):
 
     def goal_test(self, state):
         """
-
-        :Param state: State tuple of the node to be tested.
+        A simple goal test to update the best payoff.
+        :Param state: A state Tuple
         """
-        if self.payoff(state) > self.payoff(self.goal):
-            self.goal = state
-        return False
+        if self.payoff(state) > self.payoff(self.best):
+            self.best = state
 
-    def b(self, n):
+    def b(self, node):
         """
+        This is the cost function which we are driving to a minimum.
+        :Param node: either a Node or state tuple.
+        """
+        if isinstance(node, search.Node):
+            state = np.array(node.state)
+        else:
+            state = np.array(node)
 
-        :Param n: A Node being assessed.
-        """
-        return self.payoff(n.state)
+        # Create a mask
+        if self.underground.ndim == 2:
+            mask = state[:, None] > np.arange(self.underground.shape[1])
+        else:
+            mask = state[:, :, None] > np.arange(self.underground.shape[2])
+        # apply the mask and sum
+        M = np.ma.masked_array(self.cumsum_mine.copy(), mask)
+        M[M.mask] = 0
+        N = np.amax(np.array(M), axis=-1)
+        R = np.sum(N)
+        return R
 
     # ========================  Class Mine  ==================================
 
@@ -441,13 +459,34 @@ def search_bb_dig_plan(mine):
     -------
     best_payoff, best_action_list, best_final_state
     '''
-    t0 = time.time()
-    search.astar_tree_search(mine, mine.b)
-    t1 = time.time()
+    # This is a small buffer for some negative dig cases
+    BUFFER = 0.3
 
-    print(f'BB took {round(t1-t0, 5)} seconds')
-    print(mine.goal)
-    print(mine.payoff(mine.goal))
+    node = search.Node(mine.initial)
+    mine.goal_test(node.state)
+    frontier = search.PriorityQueue(f=mine.b)
+    frontier.append(node)
+    while frontier:
+        node = frontier.pop()
+        mine.goal_test(node.state)
+        for child in node.expand(mine):
+            if mine.b(child) - BUFFER > mine.b(mine.best):
+                continue
+            if child not in frontier:
+                # The node child is considered "in frontier", if a node
+                # already in frontier has the same state.
+                # See PriortyQueue.__contains__()
+                frontier.append(child)
+            else:
+                # A node in frontier has the same state as child
+                # frontier[child] is the f-value of the node.
+                # See method  PriorityQueue.__getitem__()
+                if mine.b(child) > frontier[child]:
+                    # Replace the incumbent (that is the node
+                    # already in the frontier) with child
+                    del frontier[child]
+                    frontier.append(child)
+    return find_action_sequence(mine.initial, mine.best), mine.payoff(mine.best), mine.best
 
 
 def find_action_sequence(s0, s1):
