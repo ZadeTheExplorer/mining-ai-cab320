@@ -118,19 +118,6 @@ def run_3D():
 def run_2D():
     quarry = Mine(pm.MINE_2D)
     quarry.console_display()
-<<<<<<< HEAD
-    quarry.goal = convert_to_tuple(np.array(pm.MINE_2D_FINAL_STATE))
-    print(quarry.cumsum_mine.T)
-    search_bb_dig_plan(quarry)
-
-    path = find_action_sequence(((0, 0, 0, 0),
-                       (0, 0, 0, 0),
-                       (0, 0, 0, 0)), pm.MINE_3D_FINAL_STATE)
-    print("path 3d", path)
-
-    path = find_action_sequence((1, 2, 1, 0, 0), pm.MINE_2D_FINAL_STATE)
-    print("path 2d", path)
-=======
     tic = time.time()
     print(search_bb_dig_plan(quarry))
     toc = time.time()
@@ -140,4 +127,3 @@ def run_2D():
 if __name__ == "__main__":
     run_2D()
     run_3D()
->>>>>>> kj-mining
