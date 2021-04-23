@@ -349,7 +349,7 @@ class Mine(Problem):
         # convert to np.array in order to use tuple addressing
         # state[loc]   where loc is a tuple
 
-        assert not isinstance(state, search.Node)
+        assert not isinstance(state, Node)
         state = np.array(state)
 
         if self.underground.ndim == 2:
@@ -406,7 +406,7 @@ class Mine(Problem):
         This is the cost function which we are driving to a minimum.
         :Param node: either a Node or state tuple.
         """
-        if isinstance(node, search.Node):
+        if isinstance(node, Node):
             state = np.array(node.state)
         else:
             state = np.array(node)
@@ -487,31 +487,13 @@ def search_bb_dig_plan(mine):
     -------
     best_payoff, best_action_list, best_final_state
     '''
-<<<<<<< HEAD
-    quarry = mine
-    # you can place the search function names in here to run
-    # multiple to compare.
-    searches = ["astar_graph_search"]
-    # loop through our list and run the searches.
-    for searcher in searches:
-        # this will get our function
-        fn = getattr(search, searcher)  # eqv to search.{function}
-        t0 = time.time()
-        # this will run the function
-        if searcher == "astar_graph_search":
-            sol_ts = fn(quarry, quarry.h)
-        else:
-            sol_ts = fn(quarry)
-        t1 = time.time()
-        print(f'The solver {searcher} took {t1 - t0} seconds')
-        print(sol_ts.path())
-=======
+
     # This is a small buffer for some negative dig cases
     BUFFER = 0.3
 
-    node = search.Node(mine.initial)
+    node = Node(mine.initial)
     mine.goal_test(node.state)
-    frontier = search.PriorityQueue(f=mine.b)
+    frontier = PriorityQueue(f=mine.b)
     frontier.append(node)
     while frontier:
         node = frontier.pop()
@@ -534,7 +516,6 @@ def search_bb_dig_plan(mine):
                     del frontier[child]
                     frontier.append(child)
     return find_action_sequence(mine.initial, mine.best), mine.payoff(mine.best), mine.best
->>>>>>> kj-mining
 
 
 def find_action_sequence(s0, s1):
@@ -570,14 +551,10 @@ def find_action_sequence(s0, s1):
     mask = np.full(s0.shape, True)
     MAX_POSITIVE_NUMBER = 99999999999
     while not (s0 == s1).all():
-<<<<<<< HEAD
-        loc = tuple(np.argwhere((s0 == np.min(s0, where=mask, initial=MAX_POSITIVE_NUMBER)) & mask)[0])
-=======
         loc = tuple(np.argwhere((s0 == np.min(s0,
                                               where=mask,
                                               initial=MAX_POSITIVE_NUMBER))
                                 & mask)[0])
->>>>>>> kj-mining
 
         if s0[loc] >= s1[loc]:
             # print(s0, s1)
@@ -587,8 +564,3 @@ def find_action_sequence(s0, s1):
         s0[loc] += 1
         path.append(loc)
     return path
-<<<<<<< HEAD
-
-
-=======
->>>>>>> kj-mining
