@@ -12,6 +12,8 @@ import prac_mines as pm
 
 import time
 
+from src.search import Node
+
 
 def return_mine(third=False, shape=None, style=None):
     """
@@ -35,8 +37,8 @@ def v_array(shape):
     """
 
     """
-    part1_col = np.arange(np.ceil(shape[0]/2))
-    part2_col = np.flip(np.arange(np.floor(shape[0]/2)))
+    part1_col = np.arange(np.ceil(shape[0] / 2))
+    part2_col = np.flip(np.arange(np.floor(shape[0] / 2)))
     column = np.append(part1_col, part2_col)
     array = np.tile(column, (shape[-1], 1))
     return np.transpose(array)
@@ -107,23 +109,38 @@ def testing_2D():
 
 
 def run_3D():
-    quarry = Mine(pm.MINE_3D)
+    quarry = Mine(np.random.uniform(-10, 10, (6, 6,6 )))
     quarry.console_display()
     tic = time.time()
     print(search_bb_dig_plan(quarry))
     toc = time.time()
-    print("time:", toc-tic)
+    print("time:", toc - tic)
 
 
 def run_2D():
-    quarry = Mine(pm.MINE_2D)
+    print("run 2d bb search")
+    quarry = Mine(np.random.uniform(-10, 10, (10, 10)))
     quarry.console_display()
     tic = time.time()
     print(search_bb_dig_plan(quarry))
     toc = time.time()
-    print("time:", toc-tic)
+    print("time:", toc - tic)
+
+
+def run_2D_dp():
+    quarry = Mine(np.random.uniform(-10, 10, (5, 4)))
+    quarry.console_display()
+    tic = time.time()
+    print(search_dp_dig_plan(quarry))
+    toc = time.time()
+    print("time:", toc - tic)
 
 
 if __name__ == "__main__":
-    run_2D()
-    run_3D()
+    # run_2D()
+    # run_3D()
+    run_2D_dp()
+    # underground = np.random.randint(low=-5, high=5, size=(5,4))
+    # print(underground.T)
+    # quarry = Mine(underground)
+    # print(quarry.payoff((1,2,2,2,2)))

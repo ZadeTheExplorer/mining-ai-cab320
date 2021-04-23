@@ -38,7 +38,7 @@ import matplotlib.pyplot as plt
 import itertools
 import functools  # @lru_cache(maxsize=32)
 import time
-from search import Node, Problem, PriorityQueue
+from search import Node, Problem, PriorityQueue, memoize
 
 from numbers import Number
 
@@ -182,7 +182,7 @@ class Mine(Problem):
 
         # init for BB
         goal = np.zeros((self.len_x if self.len_y is
-                         None else (self.len_x, self.len_y)),
+                                       None else (self.len_x, self.len_y)),
                         dtype=int)
         self.best = convert_to_tuple(goal)
 
@@ -423,6 +423,8 @@ class Mine(Problem):
         R = np.sum(N)
         return R
 
+    def h(self, node):
+        return self.payoff(node.state)
     # ========================  Class Mine  ==================================
 
 
@@ -445,18 +447,33 @@ def search_dp_dig_plan(mine):
     best_payoff = None
     best_action_list = None
     best_final_state = None
+    h = memoize(mine.b, slot='h', maxsize=1024)
 
-    def sub_prob(s, action):
+    def sub_prob():
+        """
+        sub-problem of the DP function
+
+        Base case: Calculate the payoff_value of a cell
+                    to mark it as profit or not to dig that cell in safety.
+
+        For example: with tolerant = 1, 2d underground, to dig down 2 cell at location 4,
+                        we need to dig down at location 3 4 5 before dig 1 more call at location 4
+                        => payoff_at(4,2) = payoff_at(4,1) + payoff_at(3,1) + payoff_at(5,1)
+
+                    tolerant = 3
+        Returns
+        -------
+
+        """
         node = Node(mine.initial)
-        if mine.goal_test(node.state):
-            return node
-        frontier = PriorityQueue(f=lambda n: n.path_cost + mine.h(n))
+        mine.goal_test(node.state)
+        frontier = PriorityQueue(f=lambda n: h(n))
         frontier.append(node)
-        explored = set()  # set of states
+        explored = set()
         while frontier:
             node = frontier.pop()
-            if mine.goal_test(node.state):
-                return node
+            print(node.state)
+            mine.goal_test(node.state)
             explored.add(node.state)
             for child in node.expand(mine):
                 if child.state not in explored and child not in frontier:
@@ -465,11 +482,12 @@ def search_dp_dig_plan(mine):
                     # frontier[child] is the f value of the
                     # incumbent node that shares the same state as
                     # the node child.  Read implementation of PriorityQueue
-                    if child.path_cost + mine.h(child) < frontier[child]:
+                    if h(child) > frontier[child]:
                         del frontier[child]  # delete the incumbent node
                         frontier.append(child)  #
-        return None
-    return best_payoff, best_action_list, best_final_state
+
+    sub_prob()
+    return find_action_sequence(mine.initial, mine.best), mine.payoff(mine.best), mine.best
 
 
 def search_bb_dig_plan(mine):
