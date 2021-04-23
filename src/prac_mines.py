@@ -123,6 +123,7 @@ MINE_2D = np.array([[-0.814,  0.637, 1.824, -0.563],
                     ],
                    dtype=np.float)
 
+MINE_2D_INITIAL = (0, 0, 0, 0, 0)
 MINE_2D_FINAL_STATE = (3, 2, 3, 4, 3)
 
 MINE_2D_ACTION_LIST = ((0,), (1,), (0,), (2,), (1,), (0,), (3,), (2,),
@@ -149,6 +150,10 @@ MINE_3D = np.array([[[0.455,  0.579, -0.54, -0.995, -0.771],
                      ]
                     ],
                    dtype=np.float)
+
+MINE_3D_INITIAL = ((0, 0, 0, 0),
+                   (0, 0, 0, 0),
+                   (0, 0, 0, 0))
 
 MINE_3D_FINAL_STATE = ((2, 1, 1, 1),
                        (1, 1, 0, 1),

@@ -58,6 +58,11 @@ class TestCase_2D:
         assert (quarry.payoff(pm.MINE_2D_FINAL_STATE) ==
                 pm.MINE_2D_PAYOFF)
 
+    def test_action_sequence_2d(self):
+        assert (find_action_sequence(pm.MINE_2D_INITIAL,
+                                     pm.MINE_2D_FINAL_STATE).sort()
+                == list(pm.MINE_2D_ACTION_LIST).sort())
+
 
 class TestCase_3D:
     def test_team_3d(self):
@@ -97,3 +102,8 @@ class TestCase_3D:
         quarry = Mine(pm.MINE_3D)
         assert (quarry.payoff(pm.MINE_3D_FINAL_STATE) ==
                 pm.MINE_3D_PAYOFF)
+
+    def test_action_sequence_3d(self):
+        assert (find_action_sequence(pm.MINE_3D_INITIAL,
+                                     pm.MINE_3D_FINAL_STATE).sort()
+                == list(pm.MINE_3D_ACTION_LIST).sort())
