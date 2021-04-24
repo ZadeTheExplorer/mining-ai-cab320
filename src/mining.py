@@ -402,7 +402,8 @@ class Mine(search.Problem):
 
     def b(self, node):
         """
-        This is the cost function which we are driving to a minimum.
+        This is the cost function which uses a state and self.cumsum_mine
+        to establish a upper for the branches.
         :Param node: either a Node or state tuple.
         """
         if isinstance(node, search.Node):
@@ -410,14 +411,16 @@ class Mine(search.Problem):
         else:
             state = np.array(node)
 
-        # Create a mask
+        # Create a mask removing current state values
         if self.underground.ndim == 2:
             mask = state[:, None] > np.arange(self.underground.shape[1])
         else:
             mask = state[:, :, None] > np.arange(self.underground.shape[2])
-        # apply the mask and sum
+        # Apply the mask to remove the values
         M = np.ma.masked_array(self.cumsum_mine.copy(), mask)
+        # make the mask values = 0
         M[M.mask] = 0
+        # find the max of the columns and return the sum
         N = np.amax(np.array(M), axis=-1)
         R = np.sum(N)
         return R
@@ -460,17 +463,23 @@ def search_bb_dig_plan(mine):
     best_payoff, best_action_list, best_final_state
     '''
     # This is a small buffer for some negative dig cases
-    BUFFER = 0.3
+    BUFFER = np.abs(np.mean(mine.underground))
 
+    # setup a lru cache for the commonly called b function
+    b = functools.lru_cache(maxsize=None)(mine.b)
+
+    # get the initial node and update our current highest
     node = search.Node(mine.initial)
     mine.goal_test(node.state)
-    frontier = search.PriorityQueue(f=mine.b)
+
+    # establish a priority queue for the tree.
+    frontier = search.PriorityQueue(f=b)
     frontier.append(node)
     while frontier:
         node = frontier.pop()
         mine.goal_test(node.state)
         for child in node.expand(mine):
-            if mine.b(child) - BUFFER > mine.b(mine.best):
+            if b(child) - BUFFER > b(mine.best):
                 continue
             if child not in frontier:
                 # The node child is considered "in frontier", if a node
@@ -481,12 +490,12 @@ def search_bb_dig_plan(mine):
                 # A node in frontier has the same state as child
                 # frontier[child] is the f-value of the node.
                 # See method  PriorityQueue.__getitem__()
-                if mine.b(child) > frontier[child]:
+                if b(child) > frontier[child]:
                     # Replace the incumbent (that is the node
                     # already in the frontier) with child
                     del frontier[child]
                     frontier.append(child)
-    return find_action_sequence(mine.initial, mine.best), mine.payoff(mine.best), mine.best
+    return mine.payoff(mine.best), find_action_sequence(mine.initial, mine.best), mine.best
 
 
 def find_action_sequence(s0, s1):
