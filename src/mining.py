@@ -184,6 +184,7 @@ class Mine(search.Problem):
                          None else (self.len_x, self.len_y)),
                         dtype=int)
         self.best = convert_to_tuple(goal)
+        self.highest = 1000000000
 
     def surface_neighbours(self, loc):
         '''
@@ -399,6 +400,8 @@ class Mine(search.Problem):
         """
         if self.payoff(state) > self.payoff(self.best):
             self.best = state
+            self.highest = self.b(state)
+        return self.highest
 
     def b(self, node):
         """
@@ -463,30 +466,40 @@ def search_bb_dig_plan(mine):
     best_payoff, best_action_list, best_final_state
     '''
     # This is a small buffer for some negative dig cases
-    BUFFER = np.abs(np.mean(mine.underground))
+    BUFFER = np.abs(np.mean(mine.cumsum_mine))
 
-    # setup a lru cache for the commonly called b function
+    # setup a lru cache for the commonly called b and test function
     b = functools.lru_cache(maxsize=None)(mine.b)
+    test = functools.lru_cache(maxsize=None)(mine.goal_test)
 
     # get the initial node and update our current highest
     node = search.Node(mine.initial)
-    mine.goal_test(node.state)
+    highest = test(node.state)
 
-    # establish a priority queue for the tree.
+    # establish a priority queue.
     frontier = search.PriorityQueue(f=b)
     frontier.append(node)
+
+    # As states can be revisited from other states we will explore like
+    # a graph
+    explored = set()
     while frontier:
         node = frontier.pop()
-        mine.goal_test(node.state)
-        for child in node.expand(mine):
-            if b(child) - BUFFER > b(mine.best):
-                continue
-            if child not in frontier:
+        # test the node and return the cost to of the current best state
+        highest = test(node.state)
+
+        # add the node to the explored list
+        explored.add(node.state)
+
+        # We will only search nodes which look to be optamistic
+        for child in [c for c in node.expand(mine)
+                      if (b(c) - BUFFER) < highest]:
+            if child.state not in explored and child not in frontier:
                 # The node child is considered "in frontier", if a node
                 # already in frontier has the same state.
                 # See PriortyQueue.__contains__()
                 frontier.append(child)
-            else:
+            elif child in frontier:
                 # A node in frontier has the same state as child
                 # frontier[child] is the f-value of the node.
                 # See method  PriorityQueue.__getitem__()
