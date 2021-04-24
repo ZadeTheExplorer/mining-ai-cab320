@@ -115,8 +115,19 @@ def payoff(array, state):
         mask = state[:, None] > np.arange(array.shape[1])
         return np.sum(array, where=mask)
     else:
+
+        # print("Underground ", array)
+        # print("State ", state)
+
         # As above
         mask = state[:, :, None] > np.arange(array.shape[2])
+
+        # print("Mask ", mask)
+
+        # print(array.shape)
+        # print(mask.shape)
+
+
         return np.sum(array, where=mask)
 
 
@@ -139,9 +150,16 @@ def goal_state_3d_with_memo(underground):
     cumsum_mine = np.sum(underground,
                                   axis=1 if underground.ndim == 2 else 2)
     
-    #print(cumsum_mine)
+    #print(underground_correct)
 
     state = np.zeros((underground_correct.shape[0],underground_correct.shape[1]))
+
+    end_state = state.flatten(order="C")
+
+    for i in range(0,len(end_state)):
+        end_state[i] += underground_correct.shape[2]
+    
+    end_state = end_state.reshape(3,4)
 
     whole_memo = dict()
 
@@ -154,21 +172,24 @@ def goal_state_3d_with_memo(underground):
 
         state_payoff = payoff(underg, given_state)
 
-        #print("Given_state ", given_state)
-
         if state_payoff > best_payoff:
             best_payoff = state_payoff
             best_state = given_state
 
         #print("State Payoff ", state_payoff)
-        #print("Best Payoff ", best_payoff)
+        print("Best Payoff ", best_payoff)
         #print("Best State ", best_state)
+
+        if (given_state == end_state).all():
+            given_state_actions = list(actions(underg, given_state))
+            whole_memo[str(given_state)] = (given_state_actions, state_payoff)
+            given_state = state
 
         given_state_actions = list(actions(underg, given_state))
 
-        whole_memo[str(given_state.flatten(order="C"))] = (given_state_actions, state_payoff)
+        whole_memo[str(given_state)] = (given_state_actions, state_payoff)
 
-        print("Memo Entry Payoff for ", str(given_state.flatten(order="C")), " ",whole_memo[str(given_state.flatten(order="C"))][1])
+        print("Memo Entry Payoff for ", str(given_state.flatten(order="C")), " ",whole_memo[str(given_state)][1])
 
         if len(given_state_actions) > 0:
 
@@ -179,13 +200,14 @@ def goal_state_3d_with_memo(underground):
 
                 #print("String New State ", str(new_state.flatten(order="C")))
 
-                if str(new_state.flatten(order="C")) not in whole_memo:
-                    recursive_search(underg, new_state, action, whole_memo)
+                if str(new_state) not in whole_memo:
+                    #recursive_search(underg, new_state, action, whole_memo)
+                    print("asdf")
                         
         else:
             return
 
-    recursive_search(underground_correct, state, whole_memo)
+    recursive_search(underground, state, whole_memo)
 
 
     '''
@@ -208,7 +230,116 @@ def goal_state_2d_with_memo(underground):
     # Set up state for recursive implementation
     state = np.zeros(underground.shape[0])
 
+    end_state = state.copy()
+
+    for i in range(0,underground.shape[0]):
+        end_state[i] += underground.shape[1]
+
     whole_memo = dict()
+
+    
+    def rec_search_2(underg, given_states, memo=None):
+
+        # Step 1 - For every state, get payoff and check if its the best
+        #     - If it is, store it and its respective state
+        # Step 2 - Add those to the memo
+        # Step 3 - For every state, get its actions
+        #     - For every action, generate a state
+        # Step 4 - Check all of those states to see if they are in memo
+        #     - If a state is in the memo, don't send it through
+        #     - If it isn't, add it to list of states to be sent through recursively
+
+        nonlocal best_payoff
+        nonlocal best_state
+        nonlocal whole_memo
+        nonlocal state
+
+        total_states = list()
+        next_states = list()
+
+        print("Given States = ", given_states)
+
+        if isinstance(given_states,list) == False:
+            if (given_states == state).all():
+                state_actions = list(actions(underg, given_states))
+                
+                for action in state_actions:
+                    new_state = given_states.copy()
+                    new_state[action] += 1
+                    total_states.append(new_state)
+        else:
+            #When there are multiple states
+
+            print(type(given_states))
+
+            for i in given_states:
+                print(type(i))
+
+            given_states = list(given_states)
+            print("Given after unique ", given_states)
+
+            for given_state in given_states:
+
+                print("Given State = ", given_state)
+
+                given_payoff = payoff(underg, given_state)
+
+                if given_payoff > best_payoff:
+                    best_payoff = given_payoff
+                    best_state = given_state
+                
+                whole_memo[str(given_state)] = given_payoff
+
+                state_actions = list(actions(underg, given_state))
+                
+                for action in state_actions:
+                    new_state = given_state.copy()
+                    new_state[action] += 1
+
+                    print("New Action ", new_state)
+
+                    if str(new_state) not in whole_memo:
+
+                        if len(total_states) == 0:
+                            total_states.append(new_state)
+                        else:
+                            for i in total_states:
+                                print("This is i ", i)
+                                print("This is new_state ", new_state)
+                                print((new_state == i).all())
+                                if (new_state == i).all() == False:
+                                    total_states.append(new_state)
+                                    break
+                                else:
+                                    pass
+
+                                print("Total Length ", len(total_states))
+                    else:
+                        print(new_state, " is already in the Memo")
+
+        print(len(total_states))
+
+        if isinstance(given_states,list) == True:
+            total_states = np.unique(total_states)
+        
+        if len(total_states) > 0:
+
+            for added_state in total_states:
+
+                print("Added State ", added_state)
+
+                if str(added_state) not in whole_memo:
+                    next_states.append(added_state)
+                
+            rec_search_2(underg, next_states, whole_memo)
+        
+        else:
+            return
+    
+    #rec_search_2(underground, state, whole_memo)
+    
+    
+
 
     def recursive_search(underg, given_state, action=None, memo=None):
 
@@ -222,23 +353,33 @@ def goal_state_2d_with_memo(underground):
                 - If it is not, call recursive search with new state and memo
 
         '''
-
         nonlocal best_payoff
         nonlocal best_state
         nonlocal action_list
         nonlocal whole_memo
+        nonlocal state
+        nonlocal end_state
+        nonlocal cumsum_mine
 
-        state_payoff = payoff(underg, given_state)
+        given_payoff = payoff(underg, given_state)
 
-        if state_payoff > best_payoff:
-            best_payoff = state_payoff
+        if given_payoff > best_payoff:
+            best_payoff = given_payoff
             best_state = tuple(given_state)
+        
+        # If you've reached the bottom of the mine
+        if (given_state == end_state).all():
+            whole_memo[str(given_state)] = given_payoff
+            given_state = state
 
+        whole_memo[str(given_state)] = given_payoff
         given_state_actions = list(actions(underg, given_state))
 
-        whole_memo[str(given_state)] = (given_state_actions, state_payoff)
+        #print("Given State, ", given_state)
+        # print("Given Actions ", given_state_actions)
+        # print("Given Payoff ", given_payoff)
         
-        if len(given_state_actions) > 0:
+        if len(given_state_actions) > 1:
 
             for action in given_state_actions:
 
@@ -246,7 +387,7 @@ def goal_state_2d_with_memo(underground):
                 new_state[action] += 1
 
                 if str(new_state) not in whole_memo:
-                    recursive_search(underg, new_state, action, whole_memo)
+                    recursive_search(underg, new_state, whole_memo)
                         
         else:
             return
@@ -352,8 +493,8 @@ def test_memo_2d():
 if __name__ == '__main__':
     # The larger mine (larger x), the crazier the time complexity comes
     #test_sanity()
-    test_sanity_3d()
+    #test_sanity_3d()
     #test_1()
     #test_2()
     #test_3()
-    #test_memo_2d()
+    test_memo_2d()
