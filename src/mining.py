@@ -618,28 +618,31 @@ def find_action_sequence(s0, s1):
     # approach: among all columns for which s0 < s1, pick the column loc
     # with the smallest s0[loc]
 
-    # If s0 and s1 is 2d tuple, it means the underground is 3d
-    # Otherwise, s0 and s1 is 1d tuple.
     # Check legal of s0 < s1
-    assert s0 <= s1
+    assert s0 < s1
 
+    # Define the valid path
     path = []
-    if s0 == s1:
-        return []
+
+    # Change state s0 and s1 from tuple to numpy array.
     s0 = np.array(s0)
     s1 = np.array(s1)
+    # Generate a boolean mask to filter the location in state s0 that equal to state s1.
     mask = np.full(s0.shape, True)
     MAX_POSITIVE_NUMBER = 99999999999
+
+    # While loop until s0 and state 1 is equal.
     while not (s0 == s1).all():
+        # Find the possible location that is available and minimum
         loc = tuple(np.argwhere((s0 == np.min(s0,
                                               where=mask,
                                               initial=MAX_POSITIVE_NUMBER))
                                 & mask)[0])
-
+        # If the location in s0 reached s1, marked it as False in the mask.
         if s0[loc] >= s1[loc]:
             mask[loc] = False
             continue
-
+        # Add the valid action to path - actions sequence
         s0[loc] += 1
         path.append(loc)
     return path

@@ -3,10 +3,10 @@
 This is used to conduct a unit test on Mine
 """
 
-from mining import my_team, Mine, search_dp_dig_plan
-from mining import search_bb_dig_plan, find_action_sequence
+from src.mining import my_team, Mine, search_dp_dig_plan
+from src.mining import search_bb_dig_plan, find_action_sequence
 
-import prac_mines as pm
+import src.prac_mines as pm
 import numpy as np
 
 TEAM = [(9193243, 'Brodie', 'Smith'),
@@ -107,3 +107,24 @@ class TestCase_3D:
         assert (find_action_sequence(pm.MINE_3D_INITIAL,
                                      pm.MINE_3D_FINAL_STATE).sort()
                 == list(pm.MINE_3D_ACTION_LIST).sort())
+
+if __name__ == "__main__":
+    TestCase_2D.test_team()
+    TestCase_2D.test_xdim()
+    TestCase_2D.test_ydim()
+    TestCase_2D.test_zdim()
+    TestCase_2D.test_cumsum()
+    TestCase_2D.test_initial()
+    TestCase_2D.test_dangerous_2d()
+    TestCase_2D.test_payoff_2d()
+    TestCase_2D.test_action_sequence_2d()
+
+    TestCase_3D.test_team_3d()
+    TestCase_3D.test_xdim_3d()
+    TestCase_3D.test_ydim_3d()
+    TestCase_3D.test_zdim_3d()
+    TestCase_3D.test_cumsum_3d()
+    TestCase_3D.test_initial()
+    TestCase_3D.test_dangerous_3d()
+    TestCase_3D.test_payoff_3d()
+    TestCase_3D.test_action_sequence_3d()
