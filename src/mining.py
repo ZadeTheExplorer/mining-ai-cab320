@@ -159,6 +159,7 @@ class Mine(search.Problem):
         None.
         '''
         assert underground.ndim in (2, 3)
+        assert dig_tolerance >= 1
 
         # self.underground  should be considered as a 'read-only' variable!
         self.underground = underground
