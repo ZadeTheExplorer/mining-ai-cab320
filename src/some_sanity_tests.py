@@ -135,11 +135,8 @@ def test_2D_search_dig_plan():
     my_underground = UNDERGROUND_2D
 
     mine = Mine(my_underground)
-    mine.console_display()
 
-    print(my_underground.__repr__())
-
-    print('-------------- DP computations -------------- ')
+    print('\n-------------- DP computations -------------- ')
     tic = time.time()
     best_payoff, best_a_list, best_final_state = search_dp_dig_plan(mine)
     toc = time.time()
@@ -168,9 +165,9 @@ def test_3D_search_dig_plan():
     my_underground = UNDERGROUND_3D
 
     mine = Mine(my_underground) 
-    mine.console_display()
 
-    print('-------------- DP computations -------------- ')
+
+    print('\n-------------- DP computations -------------- ')
     tic = time.time()
     best_payoff, best_a_list, best_final_state = search_dp_dig_plan(mine)
     toc = time.time()
