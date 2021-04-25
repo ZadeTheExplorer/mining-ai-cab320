@@ -553,7 +553,7 @@ def search_bb_dig_plan(mine):
     best_payoff, best_action_list, best_final_state
     '''
     # This is a small buffer for some negative dig cases
-    BUFFER = np.abs(np.mean(mine.cumsum_mine))
+    BUFFER = 0.1 + np.abs(np.mean(mine.cumsum_mine))
 
     # setup a lru cache for the commonly called b and test function
     b = functools.lru_cache(maxsize=None)(mine.b)
