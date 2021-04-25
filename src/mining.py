@@ -447,7 +447,69 @@ def search_dp_dig_plan(mine):
     -------
     best_payoff, best_action_list, best_final_state
     '''
-    raise NotImplementedError
+    def recursive_search(state, act_func, pay_func, rec_func, state_tpl, best_state, actions=None, three_d=False):
+        """
+
+        """
+        #
+        state_lst = convert_to_list(state_tpl)
+
+        state_payoff = pay_func(state)
+
+        if state_payoff > payoff(best_state):
+            best_state = state
+
+        given_state_actions = list(act_func(state))
+
+        state = np.array(state)
+        if three_d:
+            key = str(state.flatten(order="C"))
+        else:
+            key = str(state)
+
+        state_lst.append(convert_to_tuple(key))
+
+        if len(given_state_actions) > 0:
+            for move in given_state_actions:
+                new_state = state.copy()
+                new_state[move] += 1
+                if three_d:
+                    key = str(new_state.copy().flatten(order="C"))
+                else:
+                    key = str(new_state)
+
+                if convert_to_tuple(key) not in state_lst:
+                    best_state = recursive(convert_to_tuple(new_state),
+                                           action,
+                                           payoff,
+                                           recursive,
+                                           convert_to_tuple(state_lst),
+                                           best_state,
+                                           actions=move,
+                                           three_d=three_d)
+        return best_state
+
+    # init return vars.
+    dim_3 = True if mine.underground.ndim == 3 else False
+    best_state = ()
+    state = mine.initial
+
+    # init some lru_caches
+    action = functools.lru_cache(maxsize=None)(mine.actions)
+    payoff = functools.lru_cache(maxsize=None)(mine.payoff)
+    recursive = functools.lru_cache(maxsize=None)(recursive_search)
+    state_lst = []
+
+    # run it
+    best_state = recursive(state,
+                           action,
+                           payoff,
+                           recursive,
+                           convert_to_tuple(state_lst),
+                           state,
+                           three_d=dim_3)
+
+    return mine.payoff(best_state), find_action_sequence(mine.initial, best_state), best_state
 
 
 def search_bb_dig_plan(mine):
