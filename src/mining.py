@@ -412,6 +412,62 @@ class Mine(search.Problem):
             self.highest = self.b(state)
         return self.highest
 
+    def search_rec(self, state, act_func, pay_func, rec_func, state_tpl,
+                   best_state, actions=None, is_3D=False):
+        """
+        This is the main recursive function for the DP process.
+        :Param state: the current state as a tuple.
+        :Param act_func: The lru_cache for the action function.
+        :Param pay_func: The lru_cache for the payoff function.
+        :Param rec_func: The lru_cache for the recursive function.
+        :Param state_tpl: A tuple of currently visited states.
+        :Param best_state: The best state as a tuple.
+        :Param actions: A tuple of actions from the state or None.
+        :Param is_3d: If we are checking 2D or 3D mine.
+        """
+        # Change to a list in order to be mutable
+        state_lst = convert_to_list(state_tpl)
+
+        # Get the state payoff and check it against the best
+        state_payoff = pay_func(state)
+
+        if state_payoff > pay_func(best_state):
+            best_state = state
+
+        # Get a list of actions from this current state.
+        given_state_actions = list(act_func(state))
+
+        # Make current state an np array.
+        state = np.array(state)
+        if is_3D:
+            key = str(state.flatten(order="C"))
+        else:
+            key = str(state)
+
+        # Append the key to the state_lst
+        state_lst.append(convert_to_tuple(key))
+
+        if len(given_state_actions) > 0:
+            for move in given_state_actions:
+                new_state = state.copy()
+                new_state[move] += 1
+                if is_3D:
+                    key = str(new_state.copy().flatten(order="C"))
+                else:
+                    key = str(new_state)
+
+                # If this state currently not in the state_lst we visit it.
+                if convert_to_tuple(key) not in state_lst:
+                    best_state = self.search_rec(convert_to_tuple(new_state),
+                                                 act_func,
+                                                 pay_func,
+                                                 rec_func,
+                                                 convert_to_tuple(state_lst),
+                                                 best_state,
+                                                 actions=move,
+                                                 is_3D=is_3D)
+        return best_state
+
     def b(self, node):
         """
         This is the cost function which uses a state and self.cumsum_mine
@@ -458,62 +514,6 @@ def search_dp_dig_plan(mine):
     -------
     best_payoff, best_action_list, best_final_state
     '''
-    def recursive_search(state, act_func, pay_func, rec_func, state_tpl,
-                         best_state, actions=None, is_3D=False):
-        """
-        This is the main recursive function for the DP process.
-        :Param state: the current state as a tuple.
-        :Param act_func: The lru_cache for the action function.
-        :Param pay_func: The lru_cache for the payoff function.
-        :Param rec_func: The lru_cache for the recursive function.
-        :Param state_tpl: A tuple of currently visited states.
-        :Param best_state: The best state as a tuple.
-        :Param actions: A tuple of actions from the state or None.
-        :Param is_3d: If we are checking 2D or 3D mine.
-        """
-        # Change to a list in order to be mutable
-        state_lst = convert_to_list(state_tpl)
-
-        # Get the state payoff and check it against the best
-        state_payoff = pay_func(state)
-
-        if state_payoff > payoff(best_state):
-            best_state = state
-
-        # Get a list of actions from this current state.
-        given_state_actions = list(act_func(state))
-
-        # Make current state an np array.
-        state = np.array(state)
-        if is_3D:
-            key = str(state.flatten(order="C"))
-        else:
-            key = str(state)
-
-        # Append the key to the state_lst
-        state_lst.append(convert_to_tuple(key))
-
-        if len(given_state_actions) > 0:
-            for move in given_state_actions:
-                new_state = state.copy()
-                new_state[move] += 1
-                if is_3D:
-                    key = str(new_state.copy().flatten(order="C"))
-                else:
-                    key = str(new_state)
-
-                # If this state currently not in the state_lst we visit it.
-                if convert_to_tuple(key) not in state_lst:
-                    best_state = recursive(convert_to_tuple(new_state),
-                                           action,
-                                           payoff,
-                                           recursive,
-                                           convert_to_tuple(state_lst),
-                                           best_state,
-                                           actions=move,
-                                           is_3D=is_3D)
-        return best_state
-
     # init vars.
     mine_dim = False if mine.is_2D else True
     best_state = ()
@@ -522,17 +522,17 @@ def search_dp_dig_plan(mine):
     # init some lru_caches
     action = functools.lru_cache(maxsize=None)(mine.actions)
     payoff = functools.lru_cache(maxsize=None)(mine.payoff)
-    recursive = functools.lru_cache(maxsize=None)(recursive_search)
+    recursive = functools.lru_cache(maxsize=None)(mine.search_rec)
     state_lst = []
 
     # run it
-    best_state = recursive(state,
-                           action,
-                           payoff,
-                           recursive,
-                           convert_to_tuple(state_lst),
-                           state,
-                           is_3D=mine_dim)
+    best_state = mine.search_rec(state,
+                                 action,
+                                 payoff,
+                                 recursive,
+                                 convert_to_tuple(state_lst),
+                                 state,
+                                 is_3D=mine_dim)
 
     return mine.payoff(best_state), find_action_sequence(mine.initial, best_state), best_state
 
